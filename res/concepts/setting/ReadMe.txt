@@ -22,3 +22,23 @@ Personal opinion. Not sure what I'd personally wan to do from these, all are int
 Open to all suggestions (new settings as well, I'd ask, though, to implement some kind of story, it's more interesting that way.)
 
 Over and out. Alex.
+
+---------------------------------------------------------------------
+
+Celtic's Opinion:
+
+Honsetly, just like I figured I would, I love them all. To be honest, I hope at some point during the next twelve months we can find a way to implement all of these ideas.
+
+However, that being said, for this particular project, I think I honestly like the idea of Setting 1 best. 
+The idea is just the most intriguing to me, and I think that if we do it right, the game could be pretty sweet to be honest.
+
+As far as whether she's chasing or running... personally I like the idea of her running away better. It's hard to find compelling reasons that a young girl would be chasing someone with a knife.
+Also I think that it makes the idea of a lot of the traps seem more "real". If the girl was the one doing the chasing, wouldn't she know about the traps, etc?
+
+Call me a goofball I guess, but thoughts like that can really keep me from enjoying a game if the logic doesn't follow.
+
+But, yeah. All of the ideas are great, and I wouldn't be mad about having to use any of them!
+
+--Celtic
+
+---------------------------------------------------------------------
