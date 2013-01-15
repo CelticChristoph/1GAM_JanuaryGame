@@ -17,7 +17,7 @@ Concepts:
 	Obstacles: All sorts of candy, Chocolate stones, spikes of frosting, fallen candy canes, jelly pits.. something else…
 	Twist: Upon death player is shown a cutscene, that shows that the man(player) is actually in a desert, implying that the whole nami nam land was a mirage. (easily to technically implement)
 
-Personal opinion. Not sure what I'd personally wan to do from these, all are interesting. Difficulty of making 'em differs though. 1 being easiest and 3 hardest.
+Personal opinion: Not sure what I'd personally want to do from these, all are interesting. Difficulty of making 'em differs though. 1 being easiest and 3 hardest.
 
 Open to all suggestions (new settings as well, I'd ask, though, to implement some kind of story, it's more interesting that way.)
 
@@ -40,5 +40,16 @@ Call me a goofball I guess, but thoughts like that can really keep me from enjoy
 But, yeah. All of the ideas are great, and I wouldn't be mad about having to use any of them!
 
 --Celtic
+
+---------------------------------------------------------------------
+
+Thanks for the feedback, mate.
+
+Was halfdead while writing all of it, logic might be missing there at some points :D
+You're right, running away is a better option there *has a brief vision of death cutscene, 1s long, just enough to get the message through*
+
+Will be waiting for Patrick's opinion while trying to figure out more about how Slick2D can handle textures.
+
+--Alex
 
 ---------------------------------------------------------------------
