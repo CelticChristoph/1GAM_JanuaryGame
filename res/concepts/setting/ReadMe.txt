@@ -53,3 +53,16 @@ Will be waiting for Patrick's opinion while trying to figure out more about how 
 --Alex
 
 ---------------------------------------------------------------------
+
+Okay so I guess here's my opinion.
+
+It seems like you guys both like Set1 and that's cool with me mostly. I really like the concept art for Set1 I'm just not into dark
+/morbid stuff. If we can change it to be a bit less dark I would be cool with it.
+
+Okay it looks like we are going with Set1 without it being too gruesome! Sounds great to me.
+
+Let's do this!
+
+--Drenguin
+
+---------------------------------------------------------------------
