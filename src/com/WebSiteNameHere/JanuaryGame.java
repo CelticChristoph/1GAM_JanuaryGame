@@ -11,7 +11,7 @@ public class JanuaryGame extends BasicGame{
 	
 	public JanuaryGame()
 	{
-		super("Title");
+		super("January Game");
 	}
 	
 	
