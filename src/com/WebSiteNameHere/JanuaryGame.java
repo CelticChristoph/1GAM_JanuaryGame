@@ -9,6 +9,8 @@ import org.newdawn.slick.SlickException;
 
 public class JanuaryGame extends BasicGame{
 	
+	static Hero hero;
+	
 	public JanuaryGame()
 	{
 		super("January Game");
@@ -19,6 +21,8 @@ public class JanuaryGame extends BasicGame{
 	public static void main(String[] args) throws SlickException
     {
          AppGameContainer app = new AppGameContainer(new JanuaryGame());
+
+         hero = new Hero("Image file name goes here");
  
          app.setDisplayMode(800, 600, false);
          app.start();
