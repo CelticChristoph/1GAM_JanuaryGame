@@ -1,41 +1,41 @@
 package com.WebSiteNameHere;
 
-import org.newdawn.slick.Game;
+import org.newdawn.slick.AppGameContainer;
 import org.newdawn.slick.GameContainer;
-import org.newdawn.slick.Graphics;
 import org.newdawn.slick.SlickException;
-
-public class JanuaryGame implements Game{
-
-	@Override
-	public boolean closeRequested() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public String getTitle() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public void init(GameContainer arg0) throws SlickException {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void render(GameContainer arg0, Graphics arg1) throws SlickException {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void update(GameContainer arg0, int arg1) throws SlickException {
-		// TODO Auto-generated method stub
-		
-	}
-
-
+import org.newdawn.slick.state.StateBasedGame;
+ 
+/**
+ *
+ * @author Drenguin
+ *
+ */
+public class JanuaryGame extends StateBasedGame {
+ 
+    public static final int MAINMENUSTATE          = 0;
+    public static final int GAMEPLAYSTATE          = 1;
+ 
+    public JanuaryGame()
+    {
+        super("Red");
+        
+        this.addState(new MainMenuState(MAINMENUSTATE));
+        this.addState(new GameplayState(GAMEPLAYSTATE));
+        this.enterState(MAINMENUSTATE);
+    }
+ 
+    public static void main(String[] args) throws SlickException
+    {
+         AppGameContainer app = new AppGameContainer(new JanuaryGame());
+         
+         app.setDisplayMode(800, 600, false);
+         app.start();
+    }
+ 
+    @Override
+    public void initStatesList(GameContainer gameContainer) throws SlickException 
+    {
+    	this.getState(MAINMENUSTATE).init(gameContainer, this);
+        this.getState(GAMEPLAYSTATE).init(gameContainer, this);
+    }
 }
