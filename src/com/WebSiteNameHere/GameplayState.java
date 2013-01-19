@@ -35,10 +35,7 @@ public class GameplayState extends BasicGameState {
     //Use this method to set up all variables such as the images
     public void init(GameContainer gc, StateBasedGame sbg) throws SlickException 
     {
-    	red = new Hero("/res/sprites/player/placeholderRRH.png");
-    	red.velocity = 0.0f;
-    	red.x = 20;
-    	red.y = 450;
+    	red = new Hero(20, 450); //position x, y
     	bg = new Sprite("/res/concepts/setting/InfiRun_Set1.jpg");
     	bg.x = 0;
     	bg.y = 0;
@@ -48,7 +45,8 @@ public class GameplayState extends BasicGameState {
     public void render(GameContainer gc, StateBasedGame sbg, Graphics g) throws SlickException 
     {
     	g.drawImage(bg, bg.x, bg.y);
-    	g.drawImage(red, red.x, red.y);
+    	//red rendering is handled by Hero class now
+    	red.render();
     }
     
     //This is where the meat of everything happens, updating position etc.
@@ -60,14 +58,21 @@ public class GameplayState extends BasicGameState {
         {
     		//Only jump when red is on the ground
     		if(red.y==GROUND_HEIGHT)
-    			red.velocity = 6;
+    			red.velocity = 7;
         }
+  	
+    	//update depending on key bindings
+    	red.update();
+    	//other option is to create flags in Hero class and update 'em here (before calling on red.update()) via 
+    	//key bindings, and change animation depending on it, or make animations public and control 'em directly
+    	//directly from here, or update 'em by use of other variables: velocity, etc.
+    	
     	
     	//Update variables
     	red.velocity -= GRAVITY/60.0f;
     	
     	//Update positions
-    	red.y = red.y-red.velocity;
+    	red.y =red.y-red.velocity;
     	if(red.y>GROUND_HEIGHT) {
     		red.y = GROUND_HEIGHT;
     	}
