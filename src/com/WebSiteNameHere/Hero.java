@@ -39,11 +39,11 @@ public class Hero extends Entity{
 			ascend.stop();
 			fall.restart();
 		}
-		else if (velocity<0 && y==GameplayState.GROUND_HEIGHT && velocity>-7){
+		else if (velocity<0 && y==GameplayState.GROUND_HEIGHT && velocity>-10){
 			fall.stop();
 			land.restart();
 		}
-		else if(run.isStopped() && y==GameplayState.GROUND_HEIGHT && velocity<-7){
+		else if(run.isStopped() && y==GameplayState.GROUND_HEIGHT && velocity<-10){
 			land.stop();
 			run.start();
 		}
@@ -86,7 +86,7 @@ public class Hero extends Entity{
 		
 		//setting up jumping animation (3 parts of it) according to sprite names.
 		ascend = new Animation();
-        for (int i=1;i<=4;i++) {
+        for (int i=1;i<=5;i++) {
         	ascend.addFrame(sheet.getSprite("jump"+(i)+".png"), 150);
         }
         ascend.setAutoUpdate(true);
@@ -95,7 +95,7 @@ public class Hero extends Entity{
         ascend.stop();
         
         fall = new Animation();
-        for (int i=4;i<=5;i++) {
+        for (int i=4;i<=6;i++) {
         	fall.addFrame(sheet.getSprite("jump"+(i)+".png"), 150);
         }
         fall.setAutoUpdate(true);

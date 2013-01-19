@@ -58,7 +58,7 @@ public class GameplayState extends BasicGameState {
         {
     		//Only jump when red is on the ground
     		if(red.y==GROUND_HEIGHT)
-    			red.velocity = 6;
+    			red.velocity = 7;
         }
   	
     	//update depending on key bindings
