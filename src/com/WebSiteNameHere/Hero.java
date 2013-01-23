@@ -45,14 +45,14 @@ public class Hero extends Entity{
 		prevAnimation = animationFlag;
 		
 		//logic to change the animation flag. Needs improvement!
-		if(!rolling && roll.isStopped()){
+		if(!rolling){
 			if(vertVelocity>0)
 				animationFlag = 1;
 			else if((vertVelocity<0)&&(vertVelocity>-0.3f))
 				animationFlag = 2;
 			else if((vertVelocity<-6)&&(vertVelocity>-7))
 				animationFlag = 3;
-			else if(vertVelocity<-7)
+			else if(vertVelocity<-7 && roll.isStopped())
 				animationFlag = 0;
 		} else {
 			animationFlag = 4;

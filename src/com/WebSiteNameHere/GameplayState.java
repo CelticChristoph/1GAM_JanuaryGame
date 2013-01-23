@@ -27,8 +27,8 @@ public class GameplayState extends BasicGameState {
 	//Must create a new ArrayList<String> for each layer of
 	//background you want to create. (At least for now.)
 	//Then make a Background class.
-	ArrayList<String> foregroundImageLocations;
-	Background foreground;
+	ArrayList<String> foregroundImageLocations, midgroundImageLocations, backgroundImageLocations;
+	Background foreground, midground, background;
 
 	GameplayState( int stateID ) 
 	{
@@ -54,10 +54,20 @@ public class GameplayState extends BasicGameState {
 		//Paramaters are (X-coordinate, Y-coordinate, Speed, ArrayList<String>).
 		//-Celtic
 		//-----
+		//Use of simple array might be more resource friendly, not sure if we need
+		//dynamically changing size
+		//-Alex
+		//-----
+		backgroundImageLocations = new ArrayList<String>();
+		midgroundImageLocations = new ArrayList<String>();
 		foregroundImageLocations = new ArrayList<String>();
+		backgroundImageLocations.add("/res/sprites/bg/background1.png");
+		midgroundImageLocations.add("/res/sprites/bg/midground1.png");
 		foregroundImageLocations.add("/res/sprites/bg/foreground1.png");
 //		foregroundImageLocations.add("/res/sprites/bg/foreground2.png");
 
+		background = new Background(0f, 150f, 5.6f, backgroundImageLocations);
+		midground = new Background(0f, 0f, 7.5f, midgroundImageLocations);
 		foreground = new Background(0f, 536f, 10f, foregroundImageLocations);
 	}
 
@@ -77,6 +87,8 @@ public class GameplayState extends BasicGameState {
 		//then foreground will be "covering" or "over" red.
 		// -Celtic
 		//-----
+		background.render();
+		midground.render();
 		foreground.render();
 		red.render();
 	}
@@ -93,6 +105,8 @@ public class GameplayState extends BasicGameState {
 			red.rolling=true;
 		}
 
+		background.update();
+		midground.update();
 		foreground.update();
 		red.update();
 		//other option is to create flags in Hero class and update 'em here (before calling on red.update()) via 
