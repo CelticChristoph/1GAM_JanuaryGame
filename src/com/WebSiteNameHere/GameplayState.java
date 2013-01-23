@@ -55,12 +55,10 @@ public class GameplayState extends BasicGameState {
 		//-Celtic
 		//-----
 		foregroundImageLocations = new ArrayList<String>();
-		foregroundImageLocations.add("/res/sprites/bg/BackgroundSpriteSheet1.png");
-		foregroundImageLocations.add("/res/sprites/bg/BackgroundSpriteSheet2.png");
-		foregroundImageLocations.add("/res/sprites/bg/BackgroundSpriteSheet3.png");
+		foregroundImageLocations.add("/res/sprites/bg/foreground1.png");
+//		foregroundImageLocations.add("/res/sprites/bg/foreground2.png");
+
 		foreground = new Background(0f, 536f, 10f, foregroundImageLocations);
-		//		bg.x = 0;
-		//		bg.y = 0;
 	}
 
 	//Use render to draw everything
@@ -69,7 +67,6 @@ public class GameplayState extends BasicGameState {
 		Double vert = (double)red.vertVelocity;
 		Double foregroundX = (double)foreground.x;
 
-		//		g.drawImage(bg, bg.x, bg.y);
 		g.drawString("VertSpeed: " + vert.toString(), 90f, 10f);
 		g.drawString("ForegroundX: " + foregroundX, 600f, 10f);
 
@@ -80,8 +77,8 @@ public class GameplayState extends BasicGameState {
 		//then foreground will be "covering" or "over" red.
 		// -Celtic
 		//-----
-		red.render();
 		foreground.render();
+		red.render();
 	}
 
 	//This is where the meat of everything happens, updating position etc.
@@ -89,16 +86,14 @@ public class GameplayState extends BasicGameState {
 	{
 		//Get all inputs
 		Input input = gc.getInput();
-		if(input.isKeyDown(Input.KEY_W))
-		{
+		if(input.isKeyDown(Input.KEY_W)&&(red.y==GROUND_HEIGHT))
 			//Only jump when red is on the ground
-			if(red.y==GROUND_HEIGHT)
-				red.vertVelocity = 7;
+			red.vertVelocity = 7;
+		else if(input.isKeyDown(Input.KEY_S)&&(red.y==GROUND_HEIGHT)){
+			red.rolling=true;
 		}
 
 		foreground.update();
-
-		//update depending on key bindings
 		red.update();
 		//other option is to create flags in Hero class and update 'em here (before calling on red.update()) via 
 		//key bindings, and change animation depending on it, or make animations public and control 'em directly

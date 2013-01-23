@@ -7,13 +7,18 @@ import org.newdawn.slick.XMLPackedSheet;
 public class Hero extends Entity{
 	public int lives;
 	public float vertVelocity;
+	public boolean rolling = false;
 
 	private Animation run;
 	private Animation ascend;
 	private Animation fall;
 	private Animation land;
+	private Animation roll;
 	
-	private int jumpSeg = 0;
+	private Animation[] allAnimations = new Animation[5];
+	
+	private int animationFlag = 0; // 0=run; 1=ascend; 2=fall; 3=land; 4=roll; 5=death; 5 will be implemented later
+	private int prevAnimation;
 
 	private XMLPackedSheet sheet;
 	private float spd = 1.5f;  //speed of overall animation
@@ -31,64 +36,46 @@ public class Hero extends Entity{
 		setUpAnimations();
 		//run animation set to start at the beginning, other animations have to be stopped when setting them up.
 		run.start();
+		prevAnimation = animationFlag;
+		
 	}
 
 	public void update(){
-		//update animation depending on velocity (more will be added later, with more animations)
-		if(vertVelocity>0){
-			run.stop();
-			
-			if(ascend.isStopped())
-				ascend.restart();
-			if(ascend.getFrame() == ascend.getFrameCount())
-			{
-				jumpSeg = 1;
-			}
-				
-			
-			//ascend.restart(); //animations with .setLooping(false) have to be restarted when called upon
+		//to check later if the flag has changed
+		prevAnimation = animationFlag;
+		
+		//logic to change the animation flag. Needs improvement!
+		if(!rolling && roll.isStopped()){
+			if(vertVelocity>0)
+				animationFlag = 1;
+			else if((vertVelocity<0)&&(vertVelocity>-0.3f))
+				animationFlag = 2;
+			else if((vertVelocity<-6)&&(vertVelocity>-7))
+				animationFlag = 3;
+			else if(vertVelocity<-7)
+				animationFlag = 0;
+		} else {
+			animationFlag = 4;
+			rolling = false;
 		}
-		else if (vertVelocity<0 && y<GameplayState.GROUND_HEIGHT){
-			ascend.stop();
-			
-			if(fall.isStopped())
-				fall.restart();
-			if(fall.getFrame() == fall.getFrameCount())
-			{
-				jumpSeg = 2;
-			}
+		
+		//if flag has changed after application of logic, start animation corresponding with the new flag
+		if(prevAnimation != animationFlag)
+			startAnimation(allAnimations[animationFlag]);
+	}
+	
+	private void startAnimation(Animation anim){
+		//stops all animations with exception of passed animation
+		for (int i=0; i<allAnimations.length; i++){
+			allAnimations[i].stop();
 		}
-		else if (vertVelocity<-7 && y==GameplayState.GROUND_HEIGHT && vertVelocity>-10){
-			fall.stop();
-
-			if(land.isStopped())
-				land.restart();
-			if(land.getFrame() == land.getFrameCount())
-			{
-				jumpSeg = 3;
-			}
-		}
-		else if(run.isStopped() && y==GameplayState.GROUND_HEIGHT && vertVelocity<-10){
-			land.stop();
-			if(run.isStopped())
-				run.start();
-			jumpSeg = 0;
-
-		}
+		if(anim.isStopped())
+			anim.restart();
 	}
 
 	public void render(){ 
-		//rendering according to what animation is running
-		//these will need to be edited later to implement other animations as well
-		//by simply adding &&anotherAnimationInstance.isStopped()
-		if(run.isStopped() && fall.isStopped() && land.isStopped()) // && jumpSeg == 0)
-			ascend.draw(x,y);
-		if(run.isStopped() && ascend.isStopped() && land.isStopped()) // && jumpSeg == 1)
-			fall.draw(x,y);
-		if(run.isStopped() && ascend.isStopped() && fall.isStopped()) //&& jumpSeg == 2)
-			land.draw(x,y);
-		if(ascend.isStopped() && fall.isStopped() && land.isStopped()) // && jumpSeg == 0)
-			run.draw(x,y);
+		//rendering according to animation flag
+		allAnimations[animationFlag].draw(x, y);
 	}
 
 	private void setUpAnimations(){
@@ -114,16 +101,16 @@ public class Hero extends Entity{
 
 		//setting up jumping animation (3 parts of it) according to sprite names.
 		ascend = new Animation();
-		for (int i=1;i<=5;i++) {
+		for (int i=2;i<=3;i++) {
 			ascend.addFrame(sheet.getSprite("jump"+(i)+".png"), 150);
 		}
 		ascend.setAutoUpdate(true);
 		ascend.setLooping(false);
-		ascend.setSpeed(spd - .5f);
+		ascend.setSpeed(spd - 0.8f);
 		ascend.stop();
 
 		fall = new Animation();
-		for (int i=4;i<=6;i++) {
+		for (int i=4;i<=5;i++) {
 			fall.addFrame(sheet.getSprite("jump"+(i)+".png"), 150);
 		}
 		fall.setAutoUpdate(true);
@@ -139,5 +126,23 @@ public class Hero extends Entity{
 		land.setLooping(false);
 		land.setSpeed(spd - .5f);
 		land.stop();
+		
+		roll = new Animation();
+		for (int i=1;i<=14;i++) {
+			roll.addFrame(sheet.getSprite("roll"+(i)+".png"), 150);
+		}
+		roll.setAutoUpdate(true);
+		roll.setLooping(false);
+		roll.setSpeed(spd + 1f);
+		roll.stop();
+		
+		
+		//adding animations to the array
+		allAnimations[0] = run;
+		allAnimations[1] = ascend;
+		allAnimations[2] = fall;
+		allAnimations[3] = land;
+		allAnimations[4] = roll;
+//		allAnimations[5] = death;  //this is for later
 	}
 }
