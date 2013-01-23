@@ -27,8 +27,8 @@ public class GameplayState extends BasicGameState {
 	//Must create a new ArrayList<String> for each layer of
 	//background you want to create. (At least for now.)
 	//Then make a Background class.
-	ArrayList<String> foregroundImageLocations, midgroundImageLocations, backgroundImageLocations;
-	Background foreground, midground, background;
+	ArrayList<String> foregroundImageLocations, midgroundImageLocations, backgroundImageLocations, secondBG;
+	Background foreground, midground, background, secondbg;
 
 	GameplayState( int stateID ) 
 	{
@@ -58,16 +58,19 @@ public class GameplayState extends BasicGameState {
 		//dynamically changing size
 		//-Alex
 		//-----
+		secondBG = new ArrayList<String>();
 		backgroundImageLocations = new ArrayList<String>();
 		midgroundImageLocations = new ArrayList<String>();
 		foregroundImageLocations = new ArrayList<String>();
+		secondBG.add("/res/sprites/bg/SecondBackground1.png");
 		backgroundImageLocations.add("/res/sprites/bg/background1.png");
 		midgroundImageLocations.add("/res/sprites/bg/midground1.png");
 		foregroundImageLocations.add("/res/sprites/bg/foreground1.png");
 //		foregroundImageLocations.add("/res/sprites/bg/foreground2.png");
 
-		background = new Background(0f, 150f, 5.6f, backgroundImageLocations);
-		midground = new Background(0f, 0f, 7.5f, midgroundImageLocations);
+		secondbg = new Background(0f, 0f, 1f, secondBG);
+		background = new Background(0f, 375f, 5.6f, backgroundImageLocations);
+		midground = new Background(0f, 56f, 7.5f, midgroundImageLocations);
 		foreground = new Background(0f, 536f, 10f, foregroundImageLocations);
 	}
 
@@ -87,6 +90,7 @@ public class GameplayState extends BasicGameState {
 		//then foreground will be "covering" or "over" red.
 		// -Celtic
 		//-----
+		secondbg.render();
 		background.render();
 		midground.render();
 		foreground.render();
@@ -101,10 +105,14 @@ public class GameplayState extends BasicGameState {
 		if(input.isKeyDown(Input.KEY_W)&&(red.y==GROUND_HEIGHT))
 			//Only jump when red is on the ground
 			red.vertVelocity = 7;
-		else if(input.isKeyDown(Input.KEY_S)&&(red.y==GROUND_HEIGHT)){
+		else if(input.isKeyDown(Input.KEY_S)&&(red.y==GROUND_HEIGHT))
 			red.rolling=true;
-		}
+		else if(input.isKeyDown(Input.KEY_D)&&(red.x<=652f)) //800-128-20
+			red.x+=1f;
+		else if(input.isKeyDown(Input.KEY_A)&&(red.x>=20f))
+			red.x-=1f;
 
+		secondbg.update();
 		background.update();
 		midground.update();
 		foreground.update();
