@@ -80,9 +80,8 @@ public class Hero extends Entity{
 
 	private void setUpAnimations(){
 		//I am too tired atm, thus copy paste code
-
-
 		//getting SpriteSheet
+		
 		try {
 			sheet = new XMLPackedSheet("res/sprites/player/RedSpriteSheet.png", "res/sprites/player/RedSpriteSheet.xml");
 		} catch (SlickException e) {
@@ -136,7 +135,6 @@ public class Hero extends Entity{
 		roll.setSpeed(spd + 1f);
 		roll.stop();
 		
-		
 		//adding animations to the array
 		allAnimations[0] = run;
 		allAnimations[1] = ascend;
@@ -145,4 +143,16 @@ public class Hero extends Entity{
 		allAnimations[4] = roll;
 //		allAnimations[5] = death;  //this is for later
 	}
+	
+	
+	/**
+	 * 
+	 * @return
+	 */
+	public int getAnimationFlag()
+	{
+		return animationFlag;
+	}
+
+
 }

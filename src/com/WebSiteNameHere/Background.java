@@ -14,7 +14,6 @@ public class Background extends Entity{
 	private ArrayList<String> imageLocations;
 	private Random random = new Random();
 
-
 	public Background(float x, float y, float speed, ArrayList<String> imageLocations) throws SlickException {
 
 		this.x = x;
@@ -22,15 +21,12 @@ public class Background extends Entity{
 
 		xSpeed = speed;
 
-
 		this.imageLocations = new ArrayList<String>();
 		for(String location : imageLocations)
 		{
-			System.out.print(location);
 			this.imageLocations.add(location);
 		}
 
-		random.toString();
 		currentImage = new Image(imageLocations.get(random.nextInt(imageLocations.size())));
 		nextImage = new Image(imageLocations.get(random.nextInt(imageLocations.size())));
 	}
@@ -41,14 +37,17 @@ public class Background extends Entity{
 		return xSpeed;
 	}
 
-	@Override
+	public void setSpeed(float newSpeed){
+
+		xSpeed = newSpeed;
+	}
+
 	public void render() {
 
 		currentImage.draw(x, y);
 		nextImage.draw(x + 1024, y);
 	}
 
-	@Override
 	public void update() {
 
 		x -= xSpeed;
@@ -65,5 +64,9 @@ public class Background extends Entity{
 				e.printStackTrace();
 			}
 		}
+	}
+
+	public float getX() {
+		return x;
 	}
 }

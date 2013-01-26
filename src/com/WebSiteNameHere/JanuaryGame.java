@@ -30,6 +30,7 @@ public class JanuaryGame extends StateBasedGame {
  
     public static void main(String[] args) throws SlickException
     {
+    	
          AppGameContainer app = new AppGameContainer(new JanuaryGame());
          
          //Make it 800x600

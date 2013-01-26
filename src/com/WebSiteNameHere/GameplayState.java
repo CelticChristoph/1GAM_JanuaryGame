@@ -19,9 +19,21 @@ public class GameplayState extends BasicGameState {
 	public static final float GRAVITY = 9.8f;
 	public static final int GROUND_HEIGHT = 450;
 
+	private final long initialTime = System.nanoTime();
+
+	//Stuff
+	Double foregroundX;
+
+	//Score stuff.
+	private long score;
+	private float scoreMult;
+	private long prevScore;
+	private boolean scoreFlag;
+
+	private static float foregroundSpeed;
+
 	//Create our hero using the hero class which extends Image
 	Hero red;
-	//	Sprite bg;
 
 	//Create the backgrounds (which can also be foreground)
 	//Must create a new ArrayList<String> for each layer of
@@ -29,13 +41,14 @@ public class GameplayState extends BasicGameState {
 	//Then make a Background class.
 	ArrayList<String> foregroundImageLocations, midgroundImageLocations, backgroundImageLocations, secondBG;
 	Background foreground, midground, background, secondbg;
+	
+	private Collidable colTest;
 
-	GameplayState( int stateID ) 
+	GameplayState(int stateID) 
 	{
 		this.stateID = stateID;
 	}
 
-	@Override
 	public int getID() 
 	{
 		return stateID;
@@ -44,14 +57,20 @@ public class GameplayState extends BasicGameState {
 	//Use this method to set up all variables such as the images
 	public void init(GameContainer gc, StateBasedGame sbg) throws SlickException 
 	{
+		score = 0;
+		scoreMult = 1f;
+
+		System.out.println();
+		//Sets the initial speed of ALL backgrounds.
+		foregroundSpeed = 8f;
+
 		red = new Hero(20, 450); //position x, y
-		//		bg = new Sprite("/res/concepts/setting/InfiRun_Set1.jpg");
 
 		//-----
 		//Initialize each ArrayList<String> that you made for each layer of background
 		//then .add() the string location of each file you want to add. After that,
 		//initialize the Background class object, and pass it the parameters you want.
-		//Paramaters are (X-coordinate, Y-coordinate, Speed, ArrayList<String>).
+		//Parameters are (X-coordinate, Y-coordinate, Speed, ArrayList<String>).
 		//-Celtic
 		//-----
 		//Use of simple array might be more resource friendly, not sure if we need
@@ -66,46 +85,82 @@ public class GameplayState extends BasicGameState {
 		backgroundImageLocations.add("/res/sprites/bg/background1.png");
 		midgroundImageLocations.add("/res/sprites/bg/midground1.png");
 		foregroundImageLocations.add("/res/sprites/bg/foreground1.png");
-//		foregroundImageLocations.add("/res/sprites/bg/foreground2.png");
+		foregroundImageLocations.add("/res/sprites/bg/foreground2.png");
 
-		secondbg = new Background(0f, 0f, 1f, secondBG);
-		background = new Background(0f, 375f, 5.6f, backgroundImageLocations);
-		midground = new Background(0f, 56f, 7.5f, midgroundImageLocations);
-		foreground = new Background(0f, 536f, 10f, foregroundImageLocations);
+		secondbg = new Background(0f, 0f, foregroundSpeed * .1f, secondBG);
+		background = new Background(0f, 375f, foregroundSpeed * .56f, backgroundImageLocations);
+		midground = new Background(0f, 56f, foregroundSpeed * .75f, midgroundImageLocations);
+		foreground = new Background(0f, 536f, foregroundSpeed, foregroundImageLocations);
+		
+		colTest = new Collidable("/res/sprites/traps/smallStump.png", 100, 550, 0, 0, 64, 64);
+	}
+
+	private void updateSpeeds() {
+		foreground.setSpeed(foregroundSpeed);
+		midground.setSpeed(foregroundSpeed * .75f);
+		background.setSpeed(foregroundSpeed * .56f);
+		secondbg.setSpeed(foregroundSpeed * .1f);
+		
+		//REMEMBER TO CHANGE THIS TO WORK FOR AN
+		//ARRAY OF THESE THINGS \/\/\/\/
+		colTest.setSpeed();
+	}
+
+	public static float getForegroundSpeed() {
+		return foregroundSpeed;
+
 	}
 
 	//Use render to draw everything
-	public void render(GameContainer gc, StateBasedGame sbg, Graphics g) throws SlickException 
-	{
-		Double vert = (double)red.vertVelocity;
-		Double foregroundX = (double)foreground.x;
-
-		g.drawString("VertSpeed: " + vert.toString(), 90f, 10f);
-		g.drawString("ForegroundX: " + foregroundX, 600f, 10f);
-
-		//red rendering is handled by Hero class now
-		//-----
-		//The order the render methods are called is the order they will
-		//be drawn in, so if you call red.render() before foreground.render()
-		//then foreground will be "covering" or "over" red.
-		// -Celtic
-		//-----
+	public void render(GameContainer gc, StateBasedGame sbg, Graphics g) throws SlickException {
 		secondbg.render();
 		background.render();
 		midground.render();
 		foreground.render();
 		red.render();
+		colTest.render(g);
+
+		g.drawString("Score: " + score, 650f, 10f);
+		g.drawString("Speed: " + foregroundSpeed, 300f, 10f);
 	}
 
 	//This is where the meat of everything happens, updating position etc.
-	public void update(GameContainer gc, StateBasedGame sbg, int delta) throws SlickException 
-	{
+	public void update(GameContainer gc, StateBasedGame sbg, int delta) throws SlickException {
+
+		score = (((System.nanoTime() - initialTime)/100000000) * (long)scoreMult);
+
+		//Change the "100" to change how quickly
+		//the speed and multiplier increase.
+		//You are ~10 score per second at this rate.
+		if(score % (100 * scoreMult) == 0){
+
+			if(prevScore != score)
+				scoreFlag = false;
+
+			if(prevScore == score){
+				scoreFlag = true;
+			}
+			if(scoreFlag == false){
+
+				//Change the "10f" to change the amount
+				//of speed increase.
+				foregroundSpeed += 10f;
+				updateSpeeds();
+
+				scoreMult += .5f;
+				System.out.println("Faster!");
+			}
+
+			prevScore = score;
+			scoreFlag = true;
+		}
+
 		//Get all inputs
 		Input input = gc.getInput();
 		if(input.isKeyDown(Input.KEY_W)&&(red.y==GROUND_HEIGHT))
 			//Only jump when red is on the ground
 			red.vertVelocity = 7;
-		else if(input.isKeyDown(Input.KEY_S)&&(red.y==GROUND_HEIGHT))
+		else if(input.isKeyPressed(Input.KEY_S)&&(red.y==GROUND_HEIGHT))
 			red.rolling=true;
 		else if(input.isKeyDown(Input.KEY_D)&&(red.x<=652f)) //800-128-20
 			red.x+=1f;
@@ -117,23 +172,16 @@ public class GameplayState extends BasicGameState {
 		midground.update();
 		foreground.update();
 		red.update();
-		//other option is to create flags in Hero class and update 'em here (before calling on red.update()) via 
-		//key bindings, and change animation depending on it, or make animations public and control 'em directly
-		//directly from here, or update 'em by use of other variables: velocity, etc.
+		colTest.update();
 
-
-		//Update variables
 		red.vertVelocity -= GRAVITY/60.0f;
-
-		//Update positions
 		red.y =red.y-red.vertVelocity;
+
 		if(red.y>GROUND_HEIGHT) {
 			red.y = GROUND_HEIGHT;
 		}
-
 		if(red.vertVelocity < -11f)
 			red.vertVelocity = -10.5f;
-
 	}
 
 }
