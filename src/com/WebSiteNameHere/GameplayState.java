@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
+import org.newdawn.slick.Image;
 import org.newdawn.slick.Input;
 import org.newdawn.slick.SlickException;
 import org.newdawn.slick.state.BasicGameState;
@@ -11,7 +12,7 @@ import org.newdawn.slick.state.StateBasedGame;
 
 //IMPORTANT: (0,0) is top left of screen
 public class GameplayState extends BasicGameState {
-
+	
 	//Just a default to see if anything goes wrong
 	int stateID = -1;
 
@@ -19,7 +20,7 @@ public class GameplayState extends BasicGameState {
 	public static final float GRAVITY = 9.8f;
 	public static final int GROUND_HEIGHT = 450;
 
-	private final long initialTime = System.nanoTime();
+	private long initialTime;
 
 	//Stuff
 	Double foregroundX;
@@ -29,6 +30,7 @@ public class GameplayState extends BasicGameState {
 	private float scoreMult;
 	private long prevScore;
 	private boolean scoreFlag;
+	private boolean isPaused = false;
 
 	private static float foregroundSpeed;
 
@@ -41,6 +43,7 @@ public class GameplayState extends BasicGameState {
 	//Then make a Background class.
 	ArrayList<String> foregroundImageLocations, midgroundImageLocations, backgroundImageLocations, secondBG;
 	Background foreground, midground, background, secondbg;
+	Image paused;
 	
 	private Collidable colTest;
 
@@ -57,6 +60,7 @@ public class GameplayState extends BasicGameState {
 	//Use this method to set up all variables such as the images
 	public void init(GameContainer gc, StateBasedGame sbg) throws SlickException 
 	{
+		initialTime = System.nanoTime();
 		score = 0;
 		scoreMult = 1f;
 
@@ -93,7 +97,18 @@ public class GameplayState extends BasicGameState {
 		foreground = new Background(0f, 536f, foregroundSpeed, foregroundImageLocations);
 		
 		colTest = new Collidable("/res/sprites/traps/smallStump.png", 100, 550, 0, 0, 64, 64);
+		
+		paused = new Image("/res/sprites/pause.png");
+		paused.setAlpha(0.8f);
 	}
+	
+	@Override
+    public void enter(GameContainer gc, StateBasedGame sb) throws SlickException
+    {
+        super.enter(gc, sb);
+        score = 0;
+        init(gc, sb);
+    }
 
 	private void updateSpeeds() {
 		foreground.setSpeed(foregroundSpeed);
@@ -110,6 +125,27 @@ public class GameplayState extends BasicGameState {
 		return foregroundSpeed;
 
 	}
+	
+	private void pauseGame(StateBasedGame sbg) {
+		isPaused = true;
+		red.pauseAnimation();
+		sbg.pauseUpdate();
+	}
+	
+	private void whilePaused(GameContainer gc, StateBasedGame sbg){
+		paused.draw(0, 0);
+		Input input = gc.getInput();
+		if(input.isKeyPressed(Input.KEY_ENTER)||input.isKeyPressed(Input.KEY_SPACE)){
+			sbg.unpauseUpdate();
+			red.resumeAnimation();
+			isPaused=false;
+		}
+		if(input.isKeyPressed(Input.KEY_ESCAPE)){
+			sbg.unpauseUpdate();
+			isPaused=false;
+			sbg.enterState(JanuaryGame.MAINMENUSTATE);
+		}
+	}
 
 	//Use render to draw everything
 	public void render(GameContainer gc, StateBasedGame sbg, Graphics g) throws SlickException {
@@ -119,6 +155,9 @@ public class GameplayState extends BasicGameState {
 		foreground.render();
 		red.render();
 		colTest.render(g);
+		
+		if(isPaused)
+			whilePaused(gc,sbg);
 
 		g.drawString("Score: " + score, 650f, 10f);
 		g.drawString("Speed: " + foregroundSpeed, 300f, 10f);
@@ -126,7 +165,10 @@ public class GameplayState extends BasicGameState {
 
 	//This is where the meat of everything happens, updating position etc.
 	public void update(GameContainer gc, StateBasedGame sbg, int delta) throws SlickException {
-
+		
+		if(!gc.hasFocus())
+			pauseGame(sbg);
+	
 		score = (((System.nanoTime() - initialTime)/100000000) * (long)scoreMult);
 
 		//Change the "100" to change how quickly
@@ -166,6 +208,8 @@ public class GameplayState extends BasicGameState {
 			red.x+=1f;
 		else if(input.isKeyDown(Input.KEY_A)&&(red.x>=20f))
 			red.x-=1f;
+		if(input.isKeyPressed(Input.KEY_P)||input.isKeyPressed(Input.KEY_ESCAPE))
+			pauseGame(sbg);
 
 		secondbg.update();
 		background.update();

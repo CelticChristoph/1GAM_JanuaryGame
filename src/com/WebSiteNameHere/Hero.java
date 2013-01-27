@@ -72,6 +72,18 @@ public class Hero extends Entity{
 		if(anim.isStopped())
 			anim.restart();
 	}
+	
+	public void pauseAnimation(){
+		allAnimations[animationFlag].stopAt(allAnimations[animationFlag].getFrame());
+	}
+	
+	public void resumeAnimation(){
+		allAnimations[animationFlag].stopAt(allAnimations[animationFlag].getFrameCount());
+		if(animationFlag==0)
+			allAnimations[animationFlag].setLooping(true);
+		allAnimations[animationFlag].setCurrentFrame(allAnimations[animationFlag].getFrame());
+		allAnimations[animationFlag].start();
+	}
 
 	public void render(){ 
 		//rendering according to animation flag

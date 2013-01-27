@@ -25,7 +25,7 @@ public class JanuaryGame extends StateBasedGame {
         this.addState(new GameplayState(GAMEPLAYSTATE));
         
         //When the app begins running it will enter this state first
-        this.enterState(GAMEPLAYSTATE);
+        this.enterState(MAINMENUSTATE);
     }
  
     public static void main(String[] args) throws SlickException
