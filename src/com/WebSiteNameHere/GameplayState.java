@@ -153,8 +153,8 @@ public class GameplayState extends BasicGameState {
 		background.render();
 		midground.render();
 		foreground.render();
-		red.render();
 		colTest.render(g);
+		red.render(sbg, g);
 		
 		if(isPaused)
 			whilePaused(gc,sbg);
@@ -199,15 +199,25 @@ public class GameplayState extends BasicGameState {
 
 		//Get all inputs
 		Input input = gc.getInput();
-		if(input.isKeyDown(Input.KEY_W)&&(red.y==GROUND_HEIGHT))
-			//Only jump when red is on the ground
-			red.vertVelocity = 7;
-		else if(input.isKeyPressed(Input.KEY_S)&&(red.y==GROUND_HEIGHT))
-			red.rolling=true;
-		else if(input.isKeyDown(Input.KEY_D)&&(red.x<=652f)) //800-128-20
-			red.x+=1f;
+		if (!red.getMode()){
+			if(input.isKeyDown(Input.KEY_W)&&(red.y==GROUND_HEIGHT))
+				//Only jump when red is on the ground
+				red.vertVelocity = 7;
+			else if(input.isKeyPressed(Input.KEY_S)&&(red.y==GROUND_HEIGHT))
+				red.rolling=true;
+		} else {
+			if(input.isKeyDown(Input.KEY_W)){
+				red.y -= 5f;
+				if(red.y < 0) red.y = 0;
+			}
+			else if(input.isKeyDown(Input.KEY_S))
+				red.y += 5f;
+		}
+		
+		if(input.isKeyDown(Input.KEY_D)&&(red.x<=652f)) //800-128-20
+			red.x+=2f;
 		else if(input.isKeyDown(Input.KEY_A)&&(red.x>=20f))
-			red.x-=1f;
+			red.x-=2f;
 		if(input.isKeyPressed(Input.KEY_P)||input.isKeyPressed(Input.KEY_ESCAPE))
 			pauseGame(sbg);
 
@@ -217,9 +227,11 @@ public class GameplayState extends BasicGameState {
 		foreground.update();
 		red.update();
 		colTest.update();
-
-		red.vertVelocity -= GRAVITY/60.0f;
-		red.y =red.y-red.vertVelocity;
+		
+		if (!red.getMode()){
+			red.vertVelocity -= GRAVITY/60.0f;
+			red.y =red.y-red.vertVelocity;
+		}
 
 		if(red.y>GROUND_HEIGHT) {
 			red.y = GROUND_HEIGHT;

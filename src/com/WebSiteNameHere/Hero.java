@@ -1,8 +1,14 @@
 package com.WebSiteNameHere;
 
+import java.util.Random;
+
 import org.newdawn.slick.Animation;
+import org.newdawn.slick.GameContainer;
+import org.newdawn.slick.Graphics;
+import org.newdawn.slick.Image;
 import org.newdawn.slick.SlickException;
 import org.newdawn.slick.XMLPackedSheet;
+import org.newdawn.slick.state.StateBasedGame;
 
 public class Hero extends Entity{
 	public int lives;
@@ -14,13 +20,19 @@ public class Hero extends Entity{
 	private Animation fall;
 	private Animation land;
 	private Animation roll;
+	private Animation ssj;
+	private Animation aura;
 	
 	private Animation[] allAnimations = new Animation[5];
 	
 	private int animationFlag = 0; // 0=run; 1=ascend; 2=fall; 3=land; 4=roll; 5=death; 5 will be implemented later
 	private int prevAnimation;
+	private boolean ssjMode = false;
+	private boolean firstSSJ = true;
+	int i = 0;
 
 	private XMLPackedSheet sheet;
+	private XMLPackedSheet auraSheet;
 	private float spd = 1.5f;  //speed of overall animation
 
 	public Hero(int x, int y)
@@ -39,29 +51,43 @@ public class Hero extends Entity{
 		prevAnimation = animationFlag;
 		
 	}
+	
+	public boolean getMode(){
+		return ssjMode;
+	}
 
 	public void update(){
-		//to check later if the flag has changed
-		prevAnimation = animationFlag;
+		if(GameplayState.getForegroundSpeed()>20f)
+			ssjMode=true;
 		
-		//logic to change the animation flag. Needs improvement!
-		if(!rolling){
-			if(vertVelocity>0)
-				animationFlag = 1;
-			else if((vertVelocity<0)&&(vertVelocity>-0.3f))
-				animationFlag = 2;
-			else if((vertVelocity<-6)&&(vertVelocity>-7))
-				animationFlag = 3;
-			else if(vertVelocity<-7 && roll.isStopped())
-				animationFlag = 0;
+		if(!ssjMode){
+			//to check later if the flag has changed
+			prevAnimation = animationFlag;
+			
+			//logic to change the animation flag. Needs improvement!
+			if(!rolling){
+				if(vertVelocity>0)
+					animationFlag = 1;
+				else if((vertVelocity<0)&&(vertVelocity>-0.3f))
+					animationFlag = 2;
+				else if((vertVelocity<-6)&&(vertVelocity>-7))
+					animationFlag = 3;
+				else if(vertVelocity<-7 && roll.isStopped())
+					animationFlag = 0;
+			} else {
+				animationFlag = 4;
+				rolling = false;
+			}
+			
+			//if flag has changed after application of logic, start animation corresponding with the new flag
+			if(prevAnimation != animationFlag)
+				startAnimation(allAnimations[animationFlag]);
 		} else {
-			animationFlag = 4;
-			rolling = false;
+			for (int i=0; i<allAnimations.length; i++)
+				allAnimations[i].stop();
+			ssj.start();
+			aura.start();
 		}
-		
-		//if flag has changed after application of logic, start animation corresponding with the new flag
-		if(prevAnimation != animationFlag)
-			startAnimation(allAnimations[animationFlag]);
 	}
 	
 	private void startAnimation(Animation anim){
@@ -74,20 +100,76 @@ public class Hero extends Entity{
 	}
 	
 	public void pauseAnimation(){
-		allAnimations[animationFlag].stopAt(allAnimations[animationFlag].getFrame());
+		if(!ssjMode)
+			allAnimations[animationFlag].stopAt(allAnimations[animationFlag].getFrame());
+		else{
+			ssj.stopAt(ssj.getFrame());
+			aura.stopAt(aura.getFrame());
+		}
 	}
 	
 	public void resumeAnimation(){
-		allAnimations[animationFlag].stopAt(allAnimations[animationFlag].getFrameCount());
-		if(animationFlag==0)
-			allAnimations[animationFlag].setLooping(true);
-		allAnimations[animationFlag].setCurrentFrame(allAnimations[animationFlag].getFrame());
-		allAnimations[animationFlag].start();
+		if(!ssjMode){
+			allAnimations[animationFlag].stopAt(allAnimations[animationFlag].getFrameCount());
+			if(animationFlag==0)
+				allAnimations[animationFlag].setLooping(true);
+			allAnimations[animationFlag].setCurrentFrame(allAnimations[animationFlag].getFrame());
+			allAnimations[animationFlag].start();
+		} else {
+			ssj.stopAt(ssj.getFrameCount());
+			ssj.setLooping(true);
+			ssj.setCurrentFrame(ssj.getFrame());
+			ssj.start();
+			aura.stopAt(aura.getFrameCount());
+			aura.setLooping(true);
+			aura.setCurrentFrame(aura.getFrame());
+			aura.start();
+		}
 	}
 
-	public void render(){ 
+	public void render(){};
+	public void render(StateBasedGame sb, Graphics g){ 
+		if(ssjMode&&firstSSJ){
+			sb.pauseUpdate();
+			firstTimeSSJ(sb, g);
+		}
+		if(!ssjMode)
 		//rendering according to animation flag
-		allAnimations[animationFlag].draw(x, y);
+			allAnimations[animationFlag].draw(x, y);
+		else if(!firstSSJ&&ssjMode){
+			ssj.draw(x,y);
+			aura.draw(x-128, y);
+		}
+	}
+	
+	private void firstTimeSSJ(StateBasedGame sb, Graphics g){
+		//Image bg = new Image();
+		Image rocks = null;
+		Image lightn = null;
+		Image norm = null;
+		Image transf = null;
+		Image pLevel = null;
+		Random ran = new Random();
+		try {
+			rocks = new Image("/res/sprites/player/ssj/stones.png");
+			lightn = new Image("/res/sprites/player/ssj/lightn.png");
+			norm = new Image("/res/sprites/player/ssj/normal.png");
+			transf = new Image("/res/sprites/player/ssj/transformed.png");
+			pLevel = new Image("/res/sprites/player/ssj/pLevel.png");
+		} catch (SlickException e) {e.printStackTrace();}
+		g.clear();
+		if(ran.nextBoolean())
+			lightn.draw(0,0);
+		norm.draw(0, 0);
+		if(ran.nextBoolean())
+			transf.draw(0,0);
+		rocks.draw(0,600-i*6);
+		pLevel.draw(0, 0);
+		i++;
+		if(i>100){
+			sb.unpauseUpdate();
+			firstSSJ = false;
+		}
 	}
 
 	private void setUpAnimations(){
@@ -96,6 +178,12 @@ public class Hero extends Entity{
 		
 		try {
 			sheet = new XMLPackedSheet("res/sprites/player/RedSpriteSheet.png", "res/sprites/player/RedSpriteSheet.xml");
+		} catch (SlickException e) {
+			e.printStackTrace();
+		}
+		
+		try {
+			auraSheet = new XMLPackedSheet("res/sprites/player/ssj/Glow.png", "res/sprites/player/ssj/Glow.xml");
 		} catch (SlickException e) {
 			e.printStackTrace();
 		}
@@ -112,7 +200,7 @@ public class Hero extends Entity{
 
 		//setting up jumping animation (3 parts of it) according to sprite names.
 		ascend = new Animation();
-		for (int i=2;i<=3;i++) {
+		for (int i=1;i<=2;i++) {
 			ascend.addFrame(sheet.getSprite("jump"+(i)+".png"), 150);
 		}
 		ascend.setAutoUpdate(true);
@@ -121,7 +209,7 @@ public class Hero extends Entity{
 		ascend.stop();
 
 		fall = new Animation();
-		for (int i=4;i<=5;i++) {
+		for (int i=3;i<=4;i++) {
 			fall.addFrame(sheet.getSprite("jump"+(i)+".png"), 150);
 		}
 		fall.setAutoUpdate(true);
@@ -130,7 +218,7 @@ public class Hero extends Entity{
 		fall.stop();
 
 		land = new Animation();
-		for (int i=6;i<=8;i++) {
+		for (int i=5;i<=7;i++) {
 			land.addFrame(sheet.getSprite("jump"+(i)+".png"), 150);
 		}
 		land.setAutoUpdate(true);
@@ -146,6 +234,27 @@ public class Hero extends Entity{
 		roll.setLooping(false);
 		roll.setSpeed(spd + 1f);
 		roll.stop();
+		
+		ssj = new Animation();
+		ssj.addFrame(sheet.getSprite("ssjMode1.png"), 150);
+		ssj.addFrame(sheet.getSprite("ssjMode2_4.png"), 150);
+		ssj.addFrame(sheet.getSprite("ssjMode3.png"), 150);
+		ssj.addFrame(sheet.getSprite("ssjMode2_4.png"), 150);
+		ssj.setAutoUpdate(true);
+		ssj.setLooping(true);
+		ssj.setSpeed(spd + .8f);
+		ssj.stop();
+		
+		aura = new Animation();
+		for(int i=1; i<=3; i++){
+			Image img = auraSheet.getSprite("a" + i);
+			img.setAlpha(0.7f);
+			aura.addFrame(img, 150);
+		}
+		aura.setAutoUpdate(true);
+		aura.setLooping(true);
+		aura.setSpeed(spd);
+		aura.stop();
 		
 		//adding animations to the array
 		allAnimations[0] = run;
