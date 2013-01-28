@@ -193,12 +193,17 @@ public class Hero extends Entity{
 		if(ran.nextBoolean())
 			lightn.draw(0,0);
 		norm.draw(0, 0);
+		if(i>100 && i<250){
 		if(ran.nextBoolean())
 			transf.draw(0,0);
-		rocks.draw(0,600-i*6);
+		}
+		if(i>=250){
+			transf.draw(0,0);
+		}
+		rocks.draw(0,600-i*2);
 		pLevel.draw(0, 0);
 		i++;
-		if(i>100){
+		if(i>300){
 			sb.unpauseUpdate();
 			firstSSJ = false;
 		}
