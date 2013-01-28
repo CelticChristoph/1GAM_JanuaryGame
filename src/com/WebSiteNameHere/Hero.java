@@ -3,7 +3,6 @@ package com.WebSiteNameHere;
 import java.util.Random;
 
 import org.newdawn.slick.Animation;
-import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.Image;
 import org.newdawn.slick.SlickException;
@@ -30,6 +29,8 @@ public class Hero extends Entity{
 	private boolean ssjMode = false;
 	private boolean firstSSJ = true;
 	int i = 0;
+	
+	private Collidable heroColBox;
 
 	private XMLPackedSheet sheet;
 	private XMLPackedSheet auraSheet;
@@ -39,6 +40,8 @@ public class Hero extends Entity{
 	{
 		this.x=x;
 		this.y=y;
+		
+		heroColBox = new Collidable((int)x, (int)y, 55, 27, 106, 128, true);
 
 		vertVelocity = -10f; //Set to -10 for a smooth animation start
 		//This is her vertical velocity, and helps determine which animation
@@ -77,6 +80,28 @@ public class Hero extends Entity{
 			} else {
 				animationFlag = 4;
 				rolling = false;
+			}
+			
+			if(animationFlag == 0 || animationFlag == 3) {
+				heroColBox.setCol((int)x, (int)y, 55, 27, 106, 128);
+			}
+			
+			if(animationFlag == 1 ||animationFlag == 2){
+				if(ascend.getFrame() > 1 || fall.getFrame() <= 2){
+					heroColBox.setCol((int)x, (int)y, 55, 27, 106, 113);
+				}
+				else if(ascend.getFrame() == 1){
+					heroColBox.setCol((int)x, (int)y, 55, 27, 106, 128);
+				}
+				
+			}
+			if(animationFlag == 4){
+				if(roll.getFrame() > 1 && roll.getFrame() < 12){
+					heroColBox.setCol((int)x, (int)y, 37, 67, 120, 128);
+				}
+				else{
+					heroColBox.setCol((int)x, (int)y, 55, 27, 106, 128);
+				}
 			}
 			
 			//if flag has changed after application of logic, start animation corresponding with the new flag
@@ -126,8 +151,13 @@ public class Hero extends Entity{
 			aura.start();
 		}
 	}
+	
+	public Collidable getHeroCol(){
+		return heroColBox;
+	}
 
 	public void render(){};
+	
 	public void render(StateBasedGame sb, Graphics g){ 
 		if(ssjMode&&firstSSJ){
 			sb.pauseUpdate();
@@ -140,6 +170,8 @@ public class Hero extends Entity{
 			ssj.draw(x,y);
 			aura.draw(x-128, y);
 		}
+	
+		heroColBox.render(g);
 	}
 	
 	private void firstTimeSSJ(StateBasedGame sb, Graphics g){

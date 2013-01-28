@@ -46,6 +46,7 @@ public class GameplayState extends BasicGameState {
 	Image paused;
 	
 	private Collidable colTest;
+	private Collidable colTakeTwo;
 
 	GameplayState(int stateID) 
 	{
@@ -96,7 +97,8 @@ public class GameplayState extends BasicGameState {
 		midground = new Background(0f, 56f, foregroundSpeed * .75f, midgroundImageLocations);
 		foreground = new Background(0f, 536f, foregroundSpeed, foregroundImageLocations);
 		
-		colTest = new Collidable("/res/sprites/traps/smallStump.png", 100, 550, 0, 0, 64, 64);
+		colTest = new Collidable("/res/sprites/traps/smallStump.png", 100, 550, 0, 0, 64, 64, false);
+		colTakeTwo = new Collidable("/res/sprites/test.png", 500, 380, 17, 75, 183, 120, false);
 		
 		paused = new Image("/res/sprites/pause.png");
 		paused.setAlpha(0.8f);
@@ -110,6 +112,9 @@ public class GameplayState extends BasicGameState {
         init(gc, sb);
     }
 
+	/**
+	 * Used to change speed ONLY when speed of game changes.
+	 */
 	private void updateSpeeds() {
 		foreground.setSpeed(foregroundSpeed);
 		midground.setSpeed(foregroundSpeed * .75f);
@@ -119,6 +124,7 @@ public class GameplayState extends BasicGameState {
 		//REMEMBER TO CHANGE THIS TO WORK FOR AN
 		//ARRAY OF THESE THINGS \/\/\/\/
 		colTest.setSpeed();
+		colTakeTwo.setSpeed();
 	}
 
 	public static float getForegroundSpeed() {
@@ -154,6 +160,7 @@ public class GameplayState extends BasicGameState {
 		midground.render();
 		foreground.render();
 		colTest.render(g);
+		colTakeTwo.render(g);
 		red.render(sbg, g);
 		
 		if(isPaused)
@@ -170,6 +177,9 @@ public class GameplayState extends BasicGameState {
 			pauseGame(sbg);
 	
 		score = (((System.nanoTime() - initialTime)/100000000) * (long)scoreMult);
+		
+//		colTest.checkCollision(red.getHeroCol());
+//		red.getHeroCol().checkCollision(colTakeTwo);
 
 		//Change the "100" to change how quickly
 		//the speed and multiplier increase.
@@ -227,6 +237,7 @@ public class GameplayState extends BasicGameState {
 		foreground.update();
 		red.update();
 		colTest.update();
+		colTakeTwo.update();
 		
 		if (!red.getMode()){
 			red.vertVelocity -= GRAVITY/60.0f;
