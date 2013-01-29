@@ -20,19 +20,20 @@ public class GameplayState extends BasicGameState {
 	public static final float GRAVITY = 9.8f;
 	public static final int GROUND_HEIGHT = 450;
 
-	private long initialTime;
+	private boolean isPaused = false;
 
 	//Stuff
 	Double foregroundX;
 
 	//Score stuff.
+	private long Time;
 	private long score;
 	private float scoreMult;
-	private long prevScore;
-	private boolean scoreFlag;
-	private boolean isPaused = false;
 
+	//Speed stuff.
+	private float speedIncreaseInterval;
 	private static float foregroundSpeed;
+	private float foregroundSpeedComparison;
 
 	//Create our hero using the hero class which extends Image
 	Hero red;
@@ -61,13 +62,15 @@ public class GameplayState extends BasicGameState {
 	//Use this method to set up all variables such as the images
 	public void init(GameContainer gc, StateBasedGame sbg) throws SlickException 
 	{
-		initialTime = System.nanoTime();
+		Time = System.nanoTime();
 		score = 0;
 		scoreMult = 1f;
 
 		System.out.println();
 		//Sets the initial speed of ALL backgrounds.
 		foregroundSpeed = 8f;
+		foregroundSpeedComparison = foregroundSpeed;
+		speedIncreaseInterval = 100 * scoreMult;
 
 		red = new Hero(20, 450); //position x, y
 
@@ -108,7 +111,6 @@ public class GameplayState extends BasicGameState {
 	public void enter(GameContainer gc, StateBasedGame sb) throws SlickException
 	{
 		super.enter(gc, sb);
-		score = 0;
 		init(gc, sb);
 	}
 
@@ -176,7 +178,24 @@ public class GameplayState extends BasicGameState {
 		if(!gc.hasFocus())
 			pauseGame(sbg);
 
-		score = (((System.nanoTime() - initialTime)/100000000) * (long)scoreMult);
+		//Scoring is now handled by this timer
+		if(System.nanoTime() - Time > 100000000){
+			score += 1 * scoreMult;
+			Time = System.nanoTime();
+		}
+		
+		//decrease 100(also in init method) or scoreMultiplier gain to decrease speed gain intervals
+		//(thus going faster sooner)
+		if((8 + (int)(score / speedIncreaseInterval)) > foregroundSpeed){
+				foregroundSpeed = 8 + (int)(score / speedIncreaseInterval);
+				speedIncreaseInterval = 100 * scoreMult;
+		}
+		if(foregroundSpeedComparison != foregroundSpeed){
+			updateSpeeds();
+			foregroundSpeedComparison = foregroundSpeed;
+			
+			scoreMult += .5f;
+		}
 
 		if(colTest.checkCollision(red.getHeroCol())){
 			if(colTest.isTrap()){
@@ -198,33 +217,7 @@ public class GameplayState extends BasicGameState {
 				red.y = colTakeTwo.getFloor() - 127;
 			}
 		}
-
-		//Change the "100" to change how quickly
-		//the speed and multiplier increase.
-		//You are ~10 score per second at this rate.
-		if(score % (100 * scoreMult) == 0){
-
-			if(prevScore != score)
-				scoreFlag = false;
-
-			if(prevScore == score){
-				scoreFlag = true;
-			}
-			if(scoreFlag == false){
-
-				//Change the "10f" to change the amount
-				//of speed increase.
-				foregroundSpeed += 10f;
-				updateSpeeds();
-
-				scoreMult += .5f;
-				System.out.println("Faster!");
-			}
-
-			prevScore = score;
-			scoreFlag = true;
-		}
-
+		
 		//Get all inputs
 		Input input = gc.getInput();
 		if (!red.getMode()){
@@ -235,17 +228,17 @@ public class GameplayState extends BasicGameState {
 				red.rolling=true;
 		} else {
 			if(input.isKeyDown(Input.KEY_W)){
-				red.y -= 5f;
+				red.y -= 10f;
 				if(red.y < 0) red.y = 0;
 			}
 			else if(input.isKeyDown(Input.KEY_S))
-				red.y += 5f;
+				red.y += 10f;
 		}
 
 		if(input.isKeyDown(Input.KEY_D) && (red.x <= 652f)) //800-128-20
-			red.x += 2f;
+			red.x += 5;
 		else if(input.isKeyDown(Input.KEY_A) && (red.x >= 20f))
-			red.x -= 2f;
+			red.x -= 5f;
 		if(input.isKeyPressed(Input.KEY_P) || input.isKeyPressed(Input.KEY_ESCAPE))
 			pauseGame(sbg);
 
