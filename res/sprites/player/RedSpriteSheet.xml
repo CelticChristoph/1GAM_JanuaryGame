@@ -28,8 +28,7 @@
 	<sprite name="roll11.png" x="256" y="384" width="128" height="128" />
 	<sprite name="roll12.png" x="384" y="384" width="128" height="128" />
 	<sprite name="roll13.png" x="512" y="384" width="128" height="128" />
-	<sprite name="roll14.png" x="640" y="384" width="128" height="128" />
-	<sprite name="ssjMode1.png" x="768" y="384" width="128" height="128" />
-	<sprite name="ssjMode2_4.png" x="896" y="384" width="128" height="128" />
-	<sprite name="ssjMode3.png" x="0" y="512" width="128" height="128" />
+	<sprite name="ssjMode1.png" x="640" y="384" width="128" height="128" />
+	<sprite name="ssjMode2_4.png" x="768" y="384" width="128" height="128" />
+	<sprite name="ssjMode3.png" x="896" y="384" width="128" height="128" />
 </sheet>

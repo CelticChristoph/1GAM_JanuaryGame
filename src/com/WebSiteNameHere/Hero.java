@@ -267,7 +267,7 @@ public class Hero extends Entity{
 		land.stop();
 
 		roll = new Animation();
-		for (int i=1;i<=14;i++) {
+		for (int i=1;i<=13;i++) {
 			roll.addFrame(sheet.getSprite("roll"+(i)+".png"), 150);
 		}
 		roll.setAutoUpdate(true);
