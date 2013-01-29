@@ -13,6 +13,7 @@ public class Hero extends Entity{
 	public int lives;
 	public float vertVelocity;
 	public boolean rolling = false;
+	private final float ssjSpeed = 108;
 
 	private Animation run;
 	private Animation ascend;
@@ -21,15 +22,15 @@ public class Hero extends Entity{
 	private Animation roll;
 	private Animation ssj;
 	private Animation aura;
-	
+
 	private Animation[] allAnimations = new Animation[5];
-	
+
 	private int animationFlag = 0; // 0=run; 1=ascend; 2=fall; 3=land; 4=roll; 5=death; 5 will be implemented later
 	private int prevAnimation;
 	private boolean ssjMode = false;
 	private boolean firstSSJ = true;
 	int i = 0;
-	
+
 	private Collidable heroColBox;
 
 	private XMLPackedSheet sheet;
@@ -40,8 +41,8 @@ public class Hero extends Entity{
 	{
 		this.x=x;
 		this.y=y;
-		
-		heroColBox = new Collidable((int)x, (int)y, 55, 27, 106, 128, true);
+
+		heroColBox = new Collidable((int)x, (int)y, 55, 27, 106, 128, true, false);
 
 		vertVelocity = -10f; //Set to -10 for a smooth animation start
 		//This is her vertical velocity, and helps determine which animation
@@ -52,21 +53,21 @@ public class Hero extends Entity{
 		//run animation set to start at the beginning, other animations have to be stopped when setting them up.
 		run.start();
 		prevAnimation = animationFlag;
-		
+
 	}
-	
+
 	public boolean getMode(){
 		return ssjMode;
 	}
 
 	public void update(){
-		if(GameplayState.getForegroundSpeed()>20f)
+		if(GameplayState.getForegroundSpeed()>ssjSpeed)
 			ssjMode=true;
-		
+
 		if(!ssjMode){
 			//to check later if the flag has changed
 			prevAnimation = animationFlag;
-			
+
 			//logic to change the animation flag. Needs improvement!
 			if(!rolling){
 				if(vertVelocity>0)
@@ -81,11 +82,11 @@ public class Hero extends Entity{
 				animationFlag = 4;
 				rolling = false;
 			}
-			
+
 			if(animationFlag == 0 || animationFlag == 3) {
 				heroColBox.setCol((int)x, (int)y, 55, 27, 106, 128);
 			}
-			
+
 			if(animationFlag == 1 ||animationFlag == 2){
 				if(ascend.getFrame() > 1 || fall.getFrame() <= 2){
 					heroColBox.setCol((int)x, (int)y, 55, 27, 106, 113);
@@ -93,7 +94,7 @@ public class Hero extends Entity{
 				else if(ascend.getFrame() == 1){
 					heroColBox.setCol((int)x, (int)y, 55, 27, 106, 128);
 				}
-				
+
 			}
 			if(animationFlag == 4){
 				if(roll.getFrame() > 1 && roll.getFrame() < 12){
@@ -103,7 +104,7 @@ public class Hero extends Entity{
 					heroColBox.setCol((int)x, (int)y, 55, 27, 106, 128);
 				}
 			}
-			
+
 			//if flag has changed after application of logic, start animation corresponding with the new flag
 			if(prevAnimation != animationFlag)
 				startAnimation(allAnimations[animationFlag]);
@@ -112,9 +113,11 @@ public class Hero extends Entity{
 				allAnimations[i].stop();
 			ssj.start();
 			aura.start();
+			heroColBox.setCol((int)x, (int)y, 16, 36, 122, 94);
+			
 		}
 	}
-	
+
 	private void startAnimation(Animation anim){
 		//stops all animations with exception of passed animation
 		for (int i=0; i<allAnimations.length; i++){
@@ -123,7 +126,7 @@ public class Hero extends Entity{
 		if(anim.isStopped())
 			anim.restart();
 	}
-	
+
 	public void pauseAnimation(){
 		if(!ssjMode)
 			allAnimations[animationFlag].stopAt(allAnimations[animationFlag].getFrame());
@@ -132,7 +135,7 @@ public class Hero extends Entity{
 			aura.stopAt(aura.getFrame());
 		}
 	}
-	
+
 	public void resumeAnimation(){
 		if(!ssjMode){
 			allAnimations[animationFlag].stopAt(allAnimations[animationFlag].getFrameCount());
@@ -151,29 +154,29 @@ public class Hero extends Entity{
 			aura.start();
 		}
 	}
-	
+
 	public Collidable getHeroCol(){
 		return heroColBox;
 	}
 
 	public void render(){};
-	
+
 	public void render(StateBasedGame sb, Graphics g){ 
 		if(ssjMode&&firstSSJ){
 			sb.pauseUpdate();
 			firstTimeSSJ(sb, g);
 		}
 		if(!ssjMode)
-		//rendering according to animation flag
+			//rendering according to animation flag
 			allAnimations[animationFlag].draw(x, y);
 		else if(!firstSSJ&&ssjMode){
 			ssj.draw(x,y);
 			aura.draw(x-128, y);
 		}
-	
+
 		heroColBox.render(g);
 	}
-	
+
 	private void firstTimeSSJ(StateBasedGame sb, Graphics g){
 		//Image bg = new Image();
 		Image rocks = null;
@@ -194,8 +197,8 @@ public class Hero extends Entity{
 			lightn.draw(0,0);
 		norm.draw(0, 0);
 		if(i>100 && i<250){
-		if(ran.nextBoolean())
-			transf.draw(0,0);
+			if(ran.nextBoolean())
+				transf.draw(0,0);
 		}
 		if(i>=250){
 			transf.draw(0,0);
@@ -212,13 +215,13 @@ public class Hero extends Entity{
 	private void setUpAnimations(){
 		//I am too tired atm, thus copy paste code
 		//getting SpriteSheet
-		
+
 		try {
 			sheet = new XMLPackedSheet("res/sprites/player/RedSpriteSheet.png", "res/sprites/player/RedSpriteSheet.xml");
 		} catch (SlickException e) {
 			e.printStackTrace();
 		}
-		
+
 		try {
 			auraSheet = new XMLPackedSheet("res/sprites/player/ssj/Glow.png", "res/sprites/player/ssj/Glow.xml");
 		} catch (SlickException e) {
@@ -262,7 +265,7 @@ public class Hero extends Entity{
 		land.setLooping(false);
 		land.setSpeed(spd - .5f);
 		land.stop();
-		
+
 		roll = new Animation();
 		for (int i=1;i<=14;i++) {
 			roll.addFrame(sheet.getSprite("roll"+(i)+".png"), 150);
@@ -271,7 +274,7 @@ public class Hero extends Entity{
 		roll.setLooping(false);
 		roll.setSpeed(spd + 1f);
 		roll.stop();
-		
+
 		ssj = new Animation();
 		ssj.addFrame(sheet.getSprite("ssjMode1.png"), 150);
 		ssj.addFrame(sheet.getSprite("ssjMode2_4.png"), 150);
@@ -281,7 +284,7 @@ public class Hero extends Entity{
 		ssj.setLooping(true);
 		ssj.setSpeed(spd + .8f);
 		ssj.stop();
-		
+
 		aura = new Animation();
 		for(int i=1; i<=3; i++){
 			Image img = auraSheet.getSprite("a" + i);
@@ -292,20 +295,20 @@ public class Hero extends Entity{
 		aura.setLooping(true);
 		aura.setSpeed(spd);
 		aura.stop();
-		
+
 		//adding animations to the array
 		allAnimations[0] = run;
 		allAnimations[1] = ascend;
 		allAnimations[2] = fall;
 		allAnimations[3] = land;
 		allAnimations[4] = roll;
-//		allAnimations[5] = death;  //this is for later
+		//		allAnimations[5] = death;  //this is for later
 	}
-	
-	
+
+
 	/**
-	 * 
-	 * @return
+	 * Returns the current animationFlag value
+	 * @return int animationFlag
 	 */
 	public int getAnimationFlag()
 	{

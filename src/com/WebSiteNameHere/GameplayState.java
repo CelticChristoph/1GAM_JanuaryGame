@@ -12,7 +12,7 @@ import org.newdawn.slick.state.StateBasedGame;
 
 //IMPORTANT: (0,0) is top left of screen
 public class GameplayState extends BasicGameState {
-	
+
 	//Just a default to see if anything goes wrong
 	int stateID = -1;
 
@@ -44,7 +44,7 @@ public class GameplayState extends BasicGameState {
 	ArrayList<String> foregroundImageLocations, midgroundImageLocations, backgroundImageLocations, secondBG;
 	Background foreground, midground, background, secondbg;
 	Image paused;
-	
+
 	private Collidable colTest;
 	private Collidable colTakeTwo;
 
@@ -96,21 +96,21 @@ public class GameplayState extends BasicGameState {
 		background = new Background(0f, 375f, foregroundSpeed * .56f, backgroundImageLocations);
 		midground = new Background(0f, 56f, foregroundSpeed * .75f, midgroundImageLocations);
 		foreground = new Background(0f, 536f, foregroundSpeed, foregroundImageLocations);
-		
-		colTest = new Collidable("/res/sprites/traps/smallStump.png", 100, 550, 0, 0, 64, 64, false);
-		colTakeTwo = new Collidable("/res/sprites/test.png", 500, 380, 17, 75, 183, 120, false);
-		
+
+		colTest = new Collidable("/res/sprites/traps/smallStump.png", 100, 550, 0, 0, 64, 64, false, true);
+		colTakeTwo = new Collidable("/res/sprites/test.png", 500, 380, -200, 75, 500, 120, false, false); //183, 120
+
 		paused = new Image("/res/sprites/pause.png");
 		paused.setAlpha(0.8f);
 	}
-	
+
 	@Override
-    public void enter(GameContainer gc, StateBasedGame sb) throws SlickException
-    {
-        super.enter(gc, sb);
-        score = 0;
-        init(gc, sb);
-    }
+	public void enter(GameContainer gc, StateBasedGame sb) throws SlickException
+	{
+		super.enter(gc, sb);
+		score = 0;
+		init(gc, sb);
+	}
 
 	/**
 	 * Used to change speed ONLY when speed of game changes.
@@ -120,7 +120,7 @@ public class GameplayState extends BasicGameState {
 		midground.setSpeed(foregroundSpeed * .75f);
 		background.setSpeed(foregroundSpeed * .56f);
 		secondbg.setSpeed(foregroundSpeed * .1f);
-		
+
 		//REMEMBER TO CHANGE THIS TO WORK FOR AN
 		//ARRAY OF THESE THINGS \/\/\/\/
 		colTest.setSpeed();
@@ -131,13 +131,13 @@ public class GameplayState extends BasicGameState {
 		return foregroundSpeed;
 
 	}
-	
+
 	private void pauseGame(StateBasedGame sbg) {
 		isPaused = true;
 		red.pauseAnimation();
 		sbg.pauseUpdate();
 	}
-	
+
 	private void whilePaused(GameContainer gc, StateBasedGame sbg){
 		paused.draw(0, 0);
 		Input input = gc.getInput();
@@ -162,7 +162,7 @@ public class GameplayState extends BasicGameState {
 		colTest.render(g);
 		colTakeTwo.render(g);
 		red.render(sbg, g);
-		
+
 		if(isPaused)
 			whilePaused(gc,sbg);
 
@@ -172,14 +172,32 @@ public class GameplayState extends BasicGameState {
 
 	//This is where the meat of everything happens, updating position etc.
 	public void update(GameContainer gc, StateBasedGame sbg, int delta) throws SlickException {
-		
+
 		if(!gc.hasFocus())
 			pauseGame(sbg);
-	
+
 		score = (((System.nanoTime() - initialTime)/100000000) * (long)scoreMult);
-		
-//		colTest.checkCollision(red.getHeroCol());
-//		red.getHeroCol().checkCollision(colTakeTwo);
+
+		if(colTest.checkCollision(red.getHeroCol())){
+			if(colTest.isTrap()){
+				System.out.println("OMG COLLISIONS AND STUFF.");
+			}
+			else{
+				red.y = colTest.getFloor() - 127;
+			}
+		}
+
+		if(red.getHeroCol().checkCollision(colTakeTwo)){
+			if(colTakeTwo.isTrap()){
+				System.out.println("THIS SHOULDN'T BE HAPPENING.");
+			}
+			else if(red.x + 106 < colTakeTwo.getLeftWall()){
+				System.out.println("COLLISION BAM");
+			}
+			else{
+				red.y = colTakeTwo.getFloor() - 127;
+			}
+		}
 
 		//Change the "100" to change how quickly
 		//the speed and multiplier increase.
@@ -210,10 +228,10 @@ public class GameplayState extends BasicGameState {
 		//Get all inputs
 		Input input = gc.getInput();
 		if (!red.getMode()){
-			if(input.isKeyDown(Input.KEY_W)&&(red.y==GROUND_HEIGHT))
+			if(input.isKeyDown(Input.KEY_W) && (red.getAnimationFlag() == 0 || red.getAnimationFlag() == 4))
 				//Only jump when red is on the ground
 				red.vertVelocity = 7;
-			else if(input.isKeyPressed(Input.KEY_S)&&(red.y==GROUND_HEIGHT))
+			else if(input.isKeyPressed(Input.KEY_S) && (red.getAnimationFlag() == 0 || red.getAnimationFlag() == 4))
 				red.rolling=true;
 		} else {
 			if(input.isKeyDown(Input.KEY_W)){
@@ -223,12 +241,12 @@ public class GameplayState extends BasicGameState {
 			else if(input.isKeyDown(Input.KEY_S))
 				red.y += 5f;
 		}
-		
-		if(input.isKeyDown(Input.KEY_D)&&(red.x<=652f)) //800-128-20
-			red.x+=2f;
-		else if(input.isKeyDown(Input.KEY_A)&&(red.x>=20f))
-			red.x-=2f;
-		if(input.isKeyPressed(Input.KEY_P)||input.isKeyPressed(Input.KEY_ESCAPE))
+
+		if(input.isKeyDown(Input.KEY_D) && (red.x <= 652f)) //800-128-20
+			red.x += 2f;
+		else if(input.isKeyDown(Input.KEY_A) && (red.x >= 20f))
+			red.x -= 2f;
+		if(input.isKeyPressed(Input.KEY_P) || input.isKeyPressed(Input.KEY_ESCAPE))
 			pauseGame(sbg);
 
 		secondbg.update();
@@ -238,15 +256,17 @@ public class GameplayState extends BasicGameState {
 		red.update();
 		colTest.update();
 		colTakeTwo.update();
-		
-		if (!red.getMode()){
-			red.vertVelocity -= GRAVITY/60.0f;
-			red.y =red.y-red.vertVelocity;
-		}
+
+		if(!red.getHeroCol().checkCollision(colTakeTwo))
+			if (!red.getMode()){
+				red.vertVelocity -= GRAVITY/60.0f;
+				red.y =red.y-red.vertVelocity;
+			}
 
 		if(red.y>GROUND_HEIGHT) {
 			red.y = GROUND_HEIGHT;
 		}
+		
 		if(red.vertVelocity < -11f)
 			red.vertVelocity = -10.5f;
 	}
