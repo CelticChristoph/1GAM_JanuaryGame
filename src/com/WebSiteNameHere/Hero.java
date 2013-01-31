@@ -62,7 +62,7 @@ public class Hero extends Entity{
 	public void setAscending(boolean asc){
 		if(!falling)
 			ascending = asc;
-		if(asc && (yDelta - y == maxJumpHeight - 1)){
+		if(asc && (yDelta - y >= maxJumpHeight)){
 			ascending = false;
 			falling = true;
 		}
@@ -81,10 +81,10 @@ public class Hero extends Entity{
 			if(!rolling){
 				if(ascending && GameplayState.collidingGround())
 					animationFlag = 1;
-				else if(!ascending && !GameplayState.collidingGround())
+				else if((falling || !ascending) && !GameplayState.collidingGround())
 					animationFlag = 2;
-				else if(GameplayState.collidingGround() && fall.isStopped() && roll.isStopped()){
-					if(fall.isStopped() && land.isStopped())
+				else if(GameplayState.collidingGround() && roll.isStopped()){
+					if(land.isStopped())
 						animationFlag = 0;
 					else
 						animationFlag = 3;
@@ -137,10 +137,10 @@ public class Hero extends Entity{
 				yDelta = y;
 			falling = false;
 		}
-		if (ascending && yDelta - y < maxJumpHeight)
-			y-=5;
-		if(!ascending && animationFlag == 2){
-			y+=5;
+		if(ascending)
+			y-=7;
+		if(falling || !ascending){
+			y+=7;
 		}
 	}
 
