@@ -16,14 +16,7 @@ public class GameplayState extends BasicGameState {
 	//Just a default to see if anything goes wrong
 	int stateID = -1;
 
-	//Default gravity constant, needs to be played with
-	public static final float GRAVITY = 9.8f;
-	public static final int GROUND_HEIGHT = 450;
-
 	private boolean isPaused = false;
-
-	//Stuff
-	Double foregroundX;
 
 	//Score stuff.
 	private long Time;
@@ -36,8 +29,16 @@ public class GameplayState extends BasicGameState {
 	private float foregroundSpeedComparison;
 
 	//Create our hero using the hero class which extends Image
-	Hero red;
+	private static Hero red;
 
+	private static Collidable ground;
+	
+	//trap stuff
+	private Template template;
+	private ArrayList<Collidable> obsGroup1;
+//	private ArrayList<Collidable> obsGroup2;
+//	private ArrayList<Collidable> obsGroup3;
+	
 	//Create the backgrounds (which can also be foreground)
 	//Must create a new ArrayList<String> for each layer of
 	//background you want to create. (At least for now.)
@@ -46,8 +47,9 @@ public class GameplayState extends BasicGameState {
 	Background foreground, midground, background, secondbg;
 	Image paused;
 
-	private Collidable colTest;
-	private Collidable colTakeTwo;
+//	private Collidable colTest;
+//	private Collidable colTakeTwo;
+//	private Collidable colPit;
 
 	GameplayState(int stateID) 
 	{
@@ -66,13 +68,16 @@ public class GameplayState extends BasicGameState {
 		score = 0;
 		scoreMult = 1f;
 
-		System.out.println();
 		//Sets the initial speed of ALL backgrounds.
 		foregroundSpeed = 8f;
 		foregroundSpeedComparison = foregroundSpeed;
 		speedIncreaseInterval = 100 * scoreMult;
 
-		red = new Hero(20, 450); //position x, y
+		red = new Hero(20, 580); //position x, y
+		ground = new Collidable("ground", 0, 580, 0, 0, 820, 30, false, false);
+		ground.setStationaty();
+		
+		template = new Template();
 
 		//-----
 		//Initialize each ArrayList<String> that you made for each layer of background
@@ -89,19 +94,21 @@ public class GameplayState extends BasicGameState {
 		backgroundImageLocations = new ArrayList<String>();
 		midgroundImageLocations = new ArrayList<String>();
 		foregroundImageLocations = new ArrayList<String>();
-		secondBG.add("/res/sprites/bg/SecondBackground1.png");
-		backgroundImageLocations.add("/res/sprites/bg/background1.png");
-		midgroundImageLocations.add("/res/sprites/bg/midground1.png");
-		foregroundImageLocations.add("/res/sprites/bg/foreground1.png");
-		foregroundImageLocations.add("/res/sprites/bg/foreground2.png");
+		secondBG.add("/res/sprites/bg/sky.png");
+		backgroundImageLocations.add("/res/sprites/bg/background.png");
+		midgroundImageLocations.add("/res/sprites/bg/midground.png");
+		foregroundImageLocations.add("/res/sprites/bg/foreground.png");
 
 		secondbg = new Background(0f, 0f, foregroundSpeed * .1f, secondBG);
-		background = new Background(0f, 375f, foregroundSpeed * .56f, backgroundImageLocations);
-		midground = new Background(0f, 56f, foregroundSpeed * .75f, midgroundImageLocations);
+		background = new Background(0f, 256f, foregroundSpeed * .56f, backgroundImageLocations);
+		midground = new Background(0f, 60f, foregroundSpeed * .75f, midgroundImageLocations);
 		foreground = new Background(0f, 536f, foregroundSpeed, foregroundImageLocations);
+		
+		obsGroup1 = template.getNextObs();
 
-		colTest = new Collidable("/res/sprites/traps/smallStump.png", 100, 550, 0, 0, 64, 64, false, true);
-		colTakeTwo = new Collidable("/res/sprites/test.png", 500, 380, -200, 75, 500, 120, false, false); //183, 120
+//		colTest = new Collidable("/res/sprites/traps/smallStump.png", "stump", 100, 550, 0, 0, 64, 64, false, true);
+//		colTakeTwo = new Collidable("/res/sprites/test.png", "box", 500, 380, -200, 75, 500, 120, false, false); //183, 120
+//		colPit = new Collidable("/res/sprites/traps/pit.png", "pit", 900, 568, 32, 9, 239, 30, false, true);
 
 		paused = new Image("/res/sprites/pause.png");
 		paused.setAlpha(0.8f);
@@ -125,13 +132,43 @@ public class GameplayState extends BasicGameState {
 
 		//REMEMBER TO CHANGE THIS TO WORK FOR AN
 		//ARRAY OF THESE THINGS \/\/\/\/
-		colTest.setSpeed();
-		colTakeTwo.setSpeed();
+//		colTest.setSpeed();
+//		colTakeTwo.setSpeed();
+//		colPit.setSpeed();
+		
+		for(Collidable col : obsGroup1) { col.setSpeed(); }
+/*		for(Collidable col : obsGroup2) { col.setSpeed(); }
+		for(Collidable col : obsGroup3) { col.setSpeed(); }
+*/	}
+	
+	public static boolean collidingGround(){
+		//to be able to stand on branches add commented out code below
+		
+/*		for(Collidable col : obsGroup1) {
+			if(col.getName() == "branch")
+				return true;
+		}
+*/	
+		return red.getHeroCol().checkCollision(ground);
+	}
+	
+	public static int collidingGroundY(){
+		//to be able to stand on branches add commented out code below
+		
+/*		for(Collidable col : obsGroup1) {
+			if(col.getName() == "branch")
+				return col.getFloor();
+		}		
+*/		
+		if(red.getHeroCol().checkCollision(ground)){
+			return ground.getFloor();
+		}
+		else
+			return 0;
 	}
 
 	public static float getForegroundSpeed() {
 		return foregroundSpeed;
-
 	}
 
 	private void pauseGame(StateBasedGame sbg) {
@@ -154,6 +191,12 @@ public class GameplayState extends BasicGameState {
 			sbg.enterState(JanuaryGame.MAINMENUSTATE);
 		}
 	}
+	
+	private void getNewObsLayout(ArrayList<Collidable> group){
+		System.out.println("Trying to get new obstacles");
+		group.clear();
+		group = template.getNextObs();
+	}
 
 	//Use render to draw everything
 	public void render(GameContainer gc, StateBasedGame sbg, Graphics g) throws SlickException {
@@ -161,8 +204,17 @@ public class GameplayState extends BasicGameState {
 		background.render();
 		midground.render();
 		foreground.render();
-		colTest.render(g);
-		colTakeTwo.render(g);
+		
+//		ground.render(g);
+//		red.getHeroCol().render(g);
+		
+//		colTest.render(g);
+//		colTakeTwo.render(g);
+//		colPit.render(g);
+		for(Collidable col : obsGroup1){
+			col.render(g);
+		}
+		
 		red.render(sbg, g);
 
 		if(isPaused)
@@ -186,7 +238,7 @@ public class GameplayState extends BasicGameState {
 		
 		//decrease 100(also in init method) or scoreMultiplier gain to decrease speed gain intervals
 		//(thus going faster sooner)
-		if((8 + (int)(score / speedIncreaseInterval)) > foregroundSpeed){
+		if(((8 + (int)(score / speedIncreaseInterval)) > foregroundSpeed) && (8 + (int)(score / speedIncreaseInterval)) % 2 == 0){
 				foregroundSpeed = 8 + (int)(score / speedIncreaseInterval);
 				speedIncreaseInterval = 100 * scoreMult;
 		}
@@ -196,17 +248,14 @@ public class GameplayState extends BasicGameState {
 			
 			scoreMult += .5f;
 		}
-
-		if(colTest.checkCollision(red.getHeroCol())){
-			if(colTest.isTrap()){
-				System.out.println("OMG COLLISIONS AND STUFF.");
-			}
-			else{
-				red.y = colTest.getFloor() - 127;
-			}
+		
+		//Obstacle stuff
+		if(obsGroup1.get(obsGroup1.size() - 1).x < -256f){
+			System.out.println("New set of obstacles called");
+			getNewObsLayout(obsGroup1);
 		}
 
-		if(red.getHeroCol().checkCollision(colTakeTwo)){
+/*		if(red.getHeroCol().checkCollision(colTakeTwo)){
 			if(colTakeTwo.isTrap()){
 				System.out.println("THIS SHOULDN'T BE HAPPENING.");
 			}
@@ -217,14 +266,17 @@ public class GameplayState extends BasicGameState {
 				red.y = colTakeTwo.getFloor() - 127;
 			}
 		}
-		
+*/		
 		//Get all inputs
 		Input input = gc.getInput();
 		if (!red.getMode()){
-			if(input.isKeyDown(Input.KEY_W) && (red.getAnimationFlag() == 0 || red.getAnimationFlag() == 4))
+			if(input.isKeyDown(Input.KEY_W))
 				//Only jump when red is on the ground
-				red.vertVelocity = 7;
-			else if(input.isKeyPressed(Input.KEY_S) && (red.getAnimationFlag() == 0 || red.getAnimationFlag() == 4))
+				red.setAscending(true);
+			else 
+				red.setAscending(false);
+			
+			if(input.isKeyPressed(Input.KEY_S) && collidingGround())
 				red.rolling=true;
 		} else {
 			if(input.isKeyDown(Input.KEY_W)){
@@ -235,7 +287,7 @@ public class GameplayState extends BasicGameState {
 				red.y += 10f;
 		}
 
-		if(input.isKeyDown(Input.KEY_D) && (red.x <= 652f)) //800-128-20
+		if(input.isKeyDown(Input.KEY_D) && (red.x <= 652f))
 			red.x += 5;
 		else if(input.isKeyDown(Input.KEY_A) && (red.x >= 20f))
 			red.x -= 5f;
@@ -246,22 +298,14 @@ public class GameplayState extends BasicGameState {
 		background.update();
 		midground.update();
 		foreground.update();
+		ground.update();
 		red.update();
-		colTest.update();
-		colTakeTwo.update();
-
-		if(!red.getHeroCol().checkCollision(colTakeTwo))
-			if (!red.getMode()){
-				red.vertVelocity -= GRAVITY/60.0f;
-				red.y =red.y-red.vertVelocity;
-			}
-
-		if(red.y>GROUND_HEIGHT) {
-			red.y = GROUND_HEIGHT;
-		}
 		
-		if(red.vertVelocity < -11f)
-			red.vertVelocity = -10.5f;
+		for(Collidable col : obsGroup1){
+			col.update();
+			if(red.getHeroCol().checkCollision(col))
+				if(col.isTrap())
+					System.out.println("OMG COLLISIONS AND STUFF.");
+		}
 	}
-
 }

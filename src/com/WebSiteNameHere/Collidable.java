@@ -12,11 +12,13 @@ public class Collidable extends Entity {
 	private int cx, cy;
 	private float xSpeed;
 	private Rectangle cBox;
+	private String name;
 	private boolean hero;
 	private boolean trap;
 
-	public Collidable(int x, int y, int cx, int cy, int cdx, int cdy, boolean hero, boolean trap) {
+	public Collidable(String name, int x, int y, int cx, int cy, int cdx, int cdy, boolean hero, boolean trap) {
 
+		this.name = name;
 		this.x = x;
 		this.y = y;
 		this.cx = cx;
@@ -29,9 +31,10 @@ public class Collidable extends Entity {
 
 	}
 
-	public Collidable(String loc, int x, int y, int cx, int cy, int cdx, int cdy, boolean hero, boolean trap) throws SlickException {
+	public Collidable(String loc, String name, int x, int y, int cx, int cy, int cdx, int cdy, boolean hero, boolean trap) throws SlickException {
 
 		sprite = new Image(loc);
+		this.name = name;
 		this.x = x;
 		this.y = y;
 		this.cx = cx;
@@ -47,6 +50,10 @@ public class Collidable extends Entity {
 	public void setSpeed() {
 		xSpeed = GameplayState.getForegroundSpeed();
 	}
+	
+	public void setStationaty(){
+		xSpeed = 0;
+	}
 
 
 	public void render() {
@@ -56,8 +63,7 @@ public class Collidable extends Entity {
 	public void render(org.newdawn.slick.Graphics g) {
 		if(sprite != null)
 			render();
-		g.draw(cBox);
-		//		g.drawRect(x, y, cdx-cx, cdy-cy);
+	//	g.draw(cBox);
 	}
 
 	public void update() {
@@ -68,11 +74,11 @@ public class Collidable extends Entity {
 		cBox.setLocation(x + cx, y + cy);
 
 		//		System.out.println(x + ", " + xSpeed + ", " + GameplayState.getForegroundSpeed());
-
+/*
 		if(x < 0) {
 			x = 600;
 		}
-	}
+*/	}
 
 	public void setCol(int x, int y, int cx, int cy, int cdx, int cdy){
 		this.x = x;
@@ -122,6 +128,10 @@ public class Collidable extends Entity {
 	
 	public int getLeftWall(){
 		return (int)x + cx;
+	}
+	
+	public String getName(){
+		return name;
 	}
 
 }

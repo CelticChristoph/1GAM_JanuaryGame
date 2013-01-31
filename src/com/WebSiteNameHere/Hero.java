@@ -11,9 +11,12 @@ import org.newdawn.slick.state.StateBasedGame;
 
 public class Hero extends Entity{
 	public int lives;
-	public float vertVelocity;
 	public boolean rolling = false;
 	private final float ssjSpeed = 108;
+	private final float maxJumpHeight = 128; //pixels
+	private boolean ascending = false;
+	private boolean falling = true;
+	private float yDelta;
 
 	private Animation run;
 	private Animation ascend;
@@ -42,11 +45,7 @@ public class Hero extends Entity{
 		this.x=x;
 		this.y=y;
 
-		heroColBox = new Collidable((int)x, (int)y, 55, 27, 106, 128, true, false);
-
-		vertVelocity = -10f; //Set to -10 for a smooth animation start
-		//This is her vertical velocity, and helps determine which animation
-		//needs to be used.
+		heroColBox = new Collidable("red", (int)x, (int)y, 55, 27, 106, 128, true, false);
 
 		//setting up animations
 		setUpAnimations();
@@ -59,6 +58,16 @@ public class Hero extends Entity{
 	public boolean getMode(){
 		return ssjMode;
 	}
+	
+	public void setAscending(boolean asc){
+		if(!falling)
+			ascending = asc;
+		if(asc && (yDelta - y == maxJumpHeight - 1)){
+			ascending = false;
+			falling = true;
+		}
+		
+	}
 
 	public void update(){
 		if(GameplayState.getForegroundSpeed()>ssjSpeed)
@@ -70,14 +79,16 @@ public class Hero extends Entity{
 
 			//logic to change the animation flag. Needs improvement!
 			if(!rolling){
-				if(vertVelocity>0)
+				if(ascending && GameplayState.collidingGround())
 					animationFlag = 1;
-				else if((vertVelocity<0)&&(vertVelocity>-0.3f))
+				else if(!ascending && !GameplayState.collidingGround())
 					animationFlag = 2;
-				else if((vertVelocity<-6)&&(vertVelocity>-7))
-					animationFlag = 3;
-				else if(vertVelocity<-7 && roll.isStopped())
-					animationFlag = 0;
+				else if(GameplayState.collidingGround() && fall.isStopped() && roll.isStopped()){
+					if(fall.isStopped() && land.isStopped())
+						animationFlag = 0;
+					else
+						animationFlag = 3;
+				}
 			} else {
 				animationFlag = 4;
 				rolling = false;
@@ -113,8 +124,23 @@ public class Hero extends Entity{
 				allAnimations[i].stop();
 			ssj.start();
 			aura.start();
-			heroColBox.setCol((int)x, (int)y, 16, 36, 122, 94);
-			
+			heroColBox.setCol((int)x, (int)y, 16, 36, 122, 94);	
+		}
+		
+		//Jump Stuff
+		
+		if(GameplayState.collidingGround()){
+			int tempY = GameplayState.collidingGroundY();
+			if(tempY != 0 && y > tempY - 120)
+				y = GameplayState.collidingGroundY() - 120;
+			if(yDelta != y)
+				yDelta = y;
+			falling = false;
+		}
+		if (ascending && yDelta - y < maxJumpHeight)
+			y-=5;
+		if(!ascending && animationFlag == 2){
+			y+=5;
 		}
 	}
 
@@ -173,8 +199,6 @@ public class Hero extends Entity{
 			ssj.draw(x,y);
 			aura.draw(x-128, y);
 		}
-
-		heroColBox.render(g);
 	}
 
 	private void firstTimeSSJ(StateBasedGame sb, Graphics g){
@@ -196,7 +220,7 @@ public class Hero extends Entity{
 		if(ran.nextBoolean())
 			lightn.draw(0,0);
 		norm.draw(0, 0);
-		if(i>100 && i<250){
+		if(i>150 && i<250){
 			if(ran.nextBoolean())
 				transf.draw(0,0);
 		}
@@ -245,7 +269,7 @@ public class Hero extends Entity{
 		}
 		ascend.setAutoUpdate(true);
 		ascend.setLooping(false);
-		ascend.setSpeed(spd - 0.8f);
+		ascend.setSpeed(spd - 0.99f);
 		ascend.stop();
 
 		fall = new Animation();
@@ -263,7 +287,7 @@ public class Hero extends Entity{
 		}
 		land.setAutoUpdate(true);
 		land.setLooping(false);
-		land.setSpeed(spd - .5f);
+		land.setSpeed(spd + .5f);
 		land.stop();
 
 		roll = new Animation();
@@ -314,6 +338,4 @@ public class Hero extends Entity{
 	{
 		return animationFlag;
 	}
-
-
 }
