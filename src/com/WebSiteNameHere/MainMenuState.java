@@ -51,11 +51,11 @@ public class MainMenuState extends BasicGameState {
     	if(input.isKeyPressed(Input.KEY_ESCAPE)){
     		gc.exit();
     	}
-    	if(input.isKeyPressed(Input.KEY_UP)){
+    	if(input.isKeyPressed(Input.KEY_UP) || input.isKeyDown(Input.KEY_W)){
     		currentStart = startGameSelected;
     		currentExit = exitGame;
     	}
-    	if(input.isKeyPressed(Input.KEY_DOWN)){
+    	if(input.isKeyPressed(Input.KEY_DOWN) || input.isKeyDown(Input.KEY_S)){
     		currentExit = exitGameSelected;
     		currentStart = startGame;
     	}

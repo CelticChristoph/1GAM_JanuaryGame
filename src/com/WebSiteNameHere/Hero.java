@@ -12,12 +12,16 @@ import org.newdawn.slick.state.StateBasedGame;
 public class Hero extends Entity{
 	public int lives;
 	public boolean rolling = false;
-	private final float ssjSpeed = 108;
-	private final float maxJumpHeight = 128; //pixels
+	private final float ssjSpeed = 19;
+	private final float maxJumpHeight = 192; //pixels
 	private boolean ascending = false;
 	private boolean falling = true;
 	private float yDelta;
+	//jump arc stuff
+	private float jumpDelta;
+	private float maxJumpDelta = 7f;
 
+	//animation stuff
 	private Animation run;
 	private Animation ascend;
 	private Animation fall;
@@ -60,8 +64,18 @@ public class Hero extends Entity{
 	}
 	
 	public void setAscending(boolean asc){
-		if(!falling)
+		if(!falling){
+			if(GameplayState.collidingGround())
+				jumpDelta = 0;
+			if(maxJumpDelta - jumpDelta == 0)
+				asc = false;
 			ascending = asc;
+		}
+		if(!asc){
+			falling = true;
+			if(jumpDelta >= maxJumpDelta)
+				jumpDelta = maxJumpDelta;
+		}
 		if(asc && (yDelta - y >= maxJumpHeight)){
 			ascending = false;
 			falling = true;
@@ -108,7 +122,7 @@ public class Hero extends Entity{
 
 			}
 			if(animationFlag == 4){
-				if(roll.getFrame() > 1 && roll.getFrame() < 12){
+				if(roll.getFrame() >= 1 && roll.getFrame() < 12){
 					heroColBox.setCol((int)x, (int)y, 37, 67, 120, 128);
 				}
 				else{
@@ -128,19 +142,27 @@ public class Hero extends Entity{
 		}
 		
 		//Jump Stuff
-		
-		if(GameplayState.collidingGround()){
-			int tempY = GameplayState.collidingGroundY();
-			if(tempY != 0 && y > tempY - 120)
-				y = GameplayState.collidingGroundY() - 120;
-			if(yDelta != y)
-				yDelta = y;
-			falling = false;
-		}
-		if(ascending)
-			y-=7;
-		if(falling || !ascending){
-			y+=7;
+		if(!ssjMode){
+			if(GameplayState.collidingGround()){
+				int tempY = GameplayState.collidingGroundY();
+				if(tempY != 0 && y > tempY - 125)
+					y = GameplayState.collidingGroundY() - 125;
+				if(yDelta != y)
+					yDelta = y;
+				falling = false;
+			}
+			if(ascending){
+				jumpDelta += .2f;
+				if(jumpDelta >= maxJumpDelta)
+					jumpDelta = maxJumpDelta;
+				y-=7 - jumpDelta;
+			}
+			if(falling || !ascending){
+				jumpDelta -= .2f;
+				if(jumpDelta >= maxJumpDelta)
+					jumpDelta = maxJumpDelta;
+				y+=7 - jumpDelta;
+			}
 		}
 	}
 
@@ -203,6 +225,7 @@ public class Hero extends Entity{
 
 	private void firstTimeSSJ(StateBasedGame sb, Graphics g){
 		//Image bg = new Image();
+		y = 400;
 		Image rocks = null;
 		Image lightn = null;
 		Image norm = null;

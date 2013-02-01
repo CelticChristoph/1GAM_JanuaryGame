@@ -17,6 +17,8 @@ public class GameplayState extends BasicGameState {
 	int stateID = -1;
 
 	private boolean isPaused = false;
+	private boolean gameOver = false;
+	private boolean gameWin = false;
 
 	//Score stuff.
 	private long Time;
@@ -35,9 +37,7 @@ public class GameplayState extends BasicGameState {
 	
 	//trap stuff
 	private Template template;
-	private ArrayList<Collidable> obsGroup1;
-//	private ArrayList<Collidable> obsGroup2;
-//	private ArrayList<Collidable> obsGroup3;
+	private ArrayList<Collidable> obsGroup;
 	
 	//Create the backgrounds (which can also be foreground)
 	//Must create a new ArrayList<String> for each layer of
@@ -45,7 +45,7 @@ public class GameplayState extends BasicGameState {
 	//Then make a Background class.
 	ArrayList<String> foregroundImageLocations, midgroundImageLocations, backgroundImageLocations, secondBG;
 	Background foreground, midground, background, secondbg;
-	Image paused;
+	Image paused, gameOverImage, gameWinImage;
 
 //	private Collidable colTest;
 //	private Collidable colTakeTwo;
@@ -64,6 +64,8 @@ public class GameplayState extends BasicGameState {
 	//Use this method to set up all variables such as the images
 	public void init(GameContainer gc, StateBasedGame sbg) throws SlickException 
 	{
+		gameOver = false;
+		gameWin = false;
 		Time = System.nanoTime();
 		score = 0;
 		scoreMult = 1f;
@@ -71,7 +73,7 @@ public class GameplayState extends BasicGameState {
 		//Sets the initial speed of ALL backgrounds.
 		foregroundSpeed = 8f;
 		foregroundSpeedComparison = foregroundSpeed;
-		speedIncreaseInterval = 100 * scoreMult;
+		speedIncreaseInterval = 200 * scoreMult;
 
 		red = new Hero(20, 580); //position x, y
 		ground = new Collidable("ground", 0, 580, 0, 0, 820, 30, false, false);
@@ -104,14 +106,19 @@ public class GameplayState extends BasicGameState {
 		midground = new Background(0f, 60f, foregroundSpeed * .75f, midgroundImageLocations);
 		foreground = new Background(0f, 536f, foregroundSpeed, foregroundImageLocations);
 		
-		obsGroup1 = template.getNextObs();
+		obsGroup = template.getNextObs();
 
 //		colTest = new Collidable("/res/sprites/traps/smallStump.png", "stump", 100, 550, 0, 0, 64, 64, false, true);
 //		colTakeTwo = new Collidable("/res/sprites/test.png", "box", 500, 380, -200, 75, 500, 120, false, false); //183, 120
-//		colPit = new Collidable("/res/sprites/traps/pit.png", "pit", 900, 568, 32, 9, 239, 30, false, true);
 
 		paused = new Image("/res/sprites/pause.png");
 		paused.setAlpha(0.8f);
+		
+		gameOverImage = new Image("/res/sprites/gameOver.png");
+		gameOverImage.setAlpha(0.8f);
+		
+		gameWinImage = new Image("/res/sprites/gameWin.png");
+		gameOverImage.setAlpha(0.8f);
 	}
 
 	@Override
@@ -136,7 +143,7 @@ public class GameplayState extends BasicGameState {
 //		colTakeTwo.setSpeed();
 //		colPit.setSpeed();
 		
-		for(Collidable col : obsGroup1) { col.setSpeed(); }
+		for(Collidable col : obsGroup) { col.setSpeed(); }
 /*		for(Collidable col : obsGroup2) { col.setSpeed(); }
 		for(Collidable col : obsGroup3) { col.setSpeed(); }
 */	}
@@ -192,9 +199,52 @@ public class GameplayState extends BasicGameState {
 		}
 	}
 	
+	private void gameOverScreen(GameContainer gc, StateBasedGame sbg){
+		sbg.pauseUpdate();
+		red.pauseAnimation();
+		gameOverImage.draw(0, 0);
+		Input input = gc.getInput();
+		if(input.isKeyPressed(Input.KEY_ENTER)||input.isKeyPressed(Input.KEY_SPACE)){
+			sbg.unpauseUpdate();
+			red.resumeAnimation();
+			try {
+				init(gc, sbg);
+			} catch (SlickException e) {e.printStackTrace();}
+			gameOver = false;
+			
+		}
+		if(input.isKeyPressed(Input.KEY_ESCAPE)){
+			sbg.unpauseUpdate();
+			red.resumeAnimation();
+			gameOver = false;
+			sbg.enterState(JanuaryGame.MAINMENUSTATE);
+		}
+	}
+	
+	private void winGame(GameContainer gc, StateBasedGame sbg){
+		sbg.pauseUpdate();
+		red.pauseAnimation();
+		gameWinImage.draw(0, 0);
+		Input input = gc.getInput();
+		if(input.isKeyPressed(Input.KEY_ENTER)||input.isKeyPressed(Input.KEY_SPACE)){
+			sbg.unpauseUpdate();
+			red.resumeAnimation();
+			try {
+				init(gc, sbg);
+			} catch (SlickException e) {e.printStackTrace();}
+			gameOver = false;
+			
+		}
+		if(input.isKeyPressed(Input.KEY_ESCAPE)){
+			sbg.unpauseUpdate();
+			red.resumeAnimation();
+			gameOver = false;
+			sbg.enterState(JanuaryGame.MAINMENUSTATE);
+		}
+	}
+	
 	private void getNewObsLayout(ArrayList<Collidable> group){
 		System.out.println("Trying to get new obstacles");
-		group.clear();
 		group = template.getNextObs();
 	}
 
@@ -211,14 +261,20 @@ public class GameplayState extends BasicGameState {
 //		colTest.render(g);
 //		colTakeTwo.render(g);
 //		colPit.render(g);
-		for(Collidable col : obsGroup1){
+		for(Collidable col : obsGroup){
 			col.render(g);
 		}
 		
 		red.render(sbg, g);
 
 		if(isPaused)
-			whilePaused(gc,sbg);
+			whilePaused(gc, sbg);
+		
+		if(gameOver)
+			gameOverScreen(gc, sbg);
+		
+		if(gameWin)
+			winGame(gc, sbg);
 
 		g.drawString("Score: " + score, 650f, 10f);
 		g.drawString("Speed: " + foregroundSpeed, 300f, 10f);
@@ -240,7 +296,7 @@ public class GameplayState extends BasicGameState {
 		//(thus going faster sooner)
 		if(((8 + (int)(score / speedIncreaseInterval)) > foregroundSpeed) && (8 + (int)(score / speedIncreaseInterval)) % 2 == 0){
 				foregroundSpeed = 8 + (int)(score / speedIncreaseInterval);
-				speedIncreaseInterval = 100 * scoreMult;
+				speedIncreaseInterval = 200 * scoreMult;
 		}
 		if(foregroundSpeedComparison != foregroundSpeed){
 			updateSpeeds();
@@ -250,10 +306,16 @@ public class GameplayState extends BasicGameState {
 		}
 		
 		//Obstacle stuff
-		if(obsGroup1.get(obsGroup1.size() - 1).x < -256f){
-			System.out.println("New set of obstacles called");
-			getNewObsLayout(obsGroup1);
-		}
+//		System.out.println("Size of on screen layout = "+obsGroup1.size());
+//		if(obsGroup1.size() == 0)getNewObsLayout(obsGroup1);
+
+		float xPos = -500f;
+		for(Collidable col : obsGroup)
+			if(col.x + col.getWidth() > xPos)
+				xPos = col.x + col.getWidth();
+		
+		if(xPos < -256f) getNewObsLayout(obsGroup);
+		
 
 /*		if(red.getHeroCol().checkCollision(colTakeTwo)){
 			if(colTakeTwo.isTrap()){
@@ -270,26 +332,26 @@ public class GameplayState extends BasicGameState {
 		//Get all inputs
 		Input input = gc.getInput();
 		if (!red.getMode()){
-			if(input.isKeyDown(Input.KEY_W))
+			if(input.isKeyDown(Input.KEY_W) || input.isKeyDown(Input.KEY_UP) || input.isKeyDown(Input.KEY_SPACE))
 				//Only jump when red is on the ground
 				red.setAscending(true);
 			else 
 				red.setAscending(false);
 			
-			if(input.isKeyPressed(Input.KEY_S) && collidingGround())
+			if((input.isKeyPressed(Input.KEY_S) || input.isKeyDown(Input.KEY_DOWN)) && collidingGround())
 				red.rolling=true;
 		} else {
-			if(input.isKeyDown(Input.KEY_W)){
+			if(input.isKeyDown(Input.KEY_W) || input.isKeyDown(Input.KEY_UP)){
 				red.y -= 10f;
 				if(red.y < 0) red.y = 0;
 			}
-			else if(input.isKeyDown(Input.KEY_S))
+			else if(input.isKeyDown(Input.KEY_S) || input.isKeyDown(Input.KEY_DOWN))
 				red.y += 10f;
 		}
 
-		if(input.isKeyDown(Input.KEY_D) && (red.x <= 652f))
+		if((input.isKeyDown(Input.KEY_D) || input.isKeyDown(Input.KEY_RIGHT)) && (red.x <= 652f))
 			red.x += 5;
-		else if(input.isKeyDown(Input.KEY_A) && (red.x >= 20f))
+		else if((input.isKeyDown(Input.KEY_A) || input.isKeyDown(Input.KEY_LEFT)) && (red.x >= 20f))
 			red.x -= 5f;
 		if(input.isKeyPressed(Input.KEY_P) || input.isKeyPressed(Input.KEY_ESCAPE))
 			pauseGame(sbg);
@@ -301,11 +363,18 @@ public class GameplayState extends BasicGameState {
 		ground.update();
 		red.update();
 		
-		for(Collidable col : obsGroup1){
+		for(Collidable col : obsGroup){
 			col.update();
-			if(red.getHeroCol().checkCollision(col))
-				if(col.isTrap())
+			if(red.getHeroCol().checkCollision(col)){
+				if(col.isTrap() && !red.getMode()){
 					System.out.println("OMG COLLISIONS AND STUFF.");
+					gameOver = true;
+				}
+				if(col.isTrap() && red.getMode()){
+					System.out.println("OMG COLLISIONS AND STUFF.");
+					gameWin = true;
+				}
+			}
 		}
 	}
 }

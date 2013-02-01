@@ -21,7 +21,7 @@ public class Collidable extends Entity {
 		this.name = name;
 		this.x = x;
 		this.y = y;
-		this.cx = cx;
+		this.setCx(cx);
 		this.cy = cy;
 		this.hero = hero;
 		this.trap = trap;
@@ -31,13 +31,18 @@ public class Collidable extends Entity {
 
 	}
 
-	public Collidable(String loc, String name, int x, int y, int cx, int cy, int cdx, int cdy, boolean hero, boolean trap) throws SlickException {
+	public Collidable(String loc, String name, int x, int y, int cx, int cy, int cdx, int cdy, boolean hero, boolean trap){
 
-		sprite = new Image(loc);
+		try {
+			sprite = new Image(loc);
+		} catch (SlickException e) {
+			System.out.println("Could not get Image from location "+loc);
+			e.printStackTrace();
+		}
 		this.name = name;
 		this.x = x;
 		this.y = y;
-		this.cx = cx;
+		this.setCx(cx);
 		this.cy = cy;
 		this.hero = hero;
 		this.trap = trap;
@@ -63,7 +68,7 @@ public class Collidable extends Entity {
 	public void render(org.newdawn.slick.Graphics g) {
 		if(sprite != null)
 			render();
-	//	g.draw(cBox);
+//		g.draw(cBox);
 	}
 
 	public void update() {
@@ -71,7 +76,7 @@ public class Collidable extends Entity {
 			x -= xSpeed;
 		}
 
-		cBox.setLocation(x + cx, y + cy);
+		cBox.setLocation(x + getCx(), y + cy);
 
 		//		System.out.println(x + ", " + xSpeed + ", " + GameplayState.getForegroundSpeed());
 /*
@@ -83,7 +88,7 @@ public class Collidable extends Entity {
 	public void setCol(int x, int y, int cx, int cy, int cdx, int cdy){
 		this.x = x;
 		this.y = y;
-		this.cx = cx;
+		this.setCx(cx);
 		this.cy = cy;
 
 		setColLoc();
@@ -91,11 +96,11 @@ public class Collidable extends Entity {
 	}
 
 	public void setColLoc(){
-		cBox.setLocation(x + cx, y + cy);
+		cBox.setLocation(x + getCx(), y + cy);
 	}
 
 	public void setColSize(int cdx, int cdy){
-		cBox.setSize(cdx - cx, cdy - cy);
+		cBox.setSize(cdx - getCx(), cdy - cy);
 	}
 
 	public Shape getShape(){
@@ -127,11 +132,31 @@ public class Collidable extends Entity {
 	}
 	
 	public int getLeftWall(){
-		return (int)x + cx;
+		return (int)x + getCx();
 	}
 	
 	public String getName(){
 		return name;
+	}
+	
+	public int getWidth(){
+		return sprite.getWidth();
+	}
+	
+	public void setX(int x){
+		this.x = x;
+	}
+	
+	public void setY(int y){
+		this.y = y;
+	}
+
+	public int getCx() {
+		return cx;
+	}
+
+	public void setCx(int cx) {
+		this.cx = cx;
 	}
 
 }
